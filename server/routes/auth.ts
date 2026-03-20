@@ -64,19 +64,36 @@ export const authRoutes = new Hono<{ Bindings: Env; Variables: AuthVariables }>(
     const db = drizzle(c.env.DB);
     const user = await db.select().from(users).where(eq(users.id, c.get("userId"))).get();
     if (!user) return c.json({ error: "Not found" }, 404);
-    return c.json({ id: user.id, email: user.email, displayName: user.displayName });
+    return c.json({
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      headcountDropThreshold: user.headcountDropThreshold,
+    });
   })
 
   .put(
     "/me",
     authMiddleware,
-    zValidator("json", z.object({ displayName: z.string().min(1).max(50) })),
+    zValidator(
+      "json",
+      z.object({
+        displayName: z.string().min(1).max(50).optional(),
+        headcountDropThreshold: z.number().int().min(1).max(50).optional(),
+      }).refine((data) => data.displayName !== undefined || data.headcountDropThreshold !== undefined, {
+        message: "At least one field must be provided",
+      }),
+    ),
     async (c) => {
       const db = drizzle(c.env.DB);
-      const { displayName } = c.req.valid("json");
+      const body = c.req.valid("json");
       const userId = c.get("userId");
 
-      await db.update(users).set({ displayName }).where(eq(users.id, userId));
-      return c.json({ displayName });
+      const updates: Record<string, unknown> = {};
+      if (body.displayName !== undefined) updates.displayName = body.displayName;
+      if (body.headcountDropThreshold !== undefined) updates.headcountDropThreshold = body.headcountDropThreshold;
+
+      await db.update(users).set(updates).where(eq(users.id, userId));
+      return c.json(updates);
     },
   );

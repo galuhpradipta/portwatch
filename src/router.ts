@@ -30,33 +30,45 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        loader: () => loadOr(() => apiFetch("/notes"), [] as unknown[]),
+        loader: () => loadOr(() => apiFetch("/portfolio"), []),
         lazy: async () => {
-          const { default: Component } = await import("./routes/HomePage.tsx");
+          const { default: Component } = await import("./routes/DashboardPage.tsx");
           return { Component };
         },
       },
       {
-        path: "notes/new",
-        loader: () => null,
+        path: "companies",
+        loader: async () => {
+          const [companies, portfolio] = await Promise.all([
+            loadOr(() => apiFetch("/companies"), []),
+            loadOr(() => apiFetch("/portfolio"), []),
+          ]);
+          return { companies, portfolio };
+        },
         lazy: async () => {
-          const { default: Component } = await import("./features/notes/NoteFormPage.tsx");
+          const { default: Component } = await import("./features/companies/CompaniesPage.tsx");
           return { Component };
         },
       },
       {
-        path: "notes/:id",
-        loader: ({ params }) => loadOr(() => apiFetch(`/notes/${params.id}`), null),
+        path: "companies/:id",
+        loader: async ({ params }) => {
+          const [company, portfolio] = await Promise.all([
+            loadOr(() => apiFetch(`/companies/${params.id}`), null),
+            loadOr(() => apiFetch("/portfolio"), []),
+          ]);
+          return { company, portfolio };
+        },
         lazy: async () => {
-          const { default: Component } = await import("./features/notes/NoteDetailPage.tsx");
+          const { default: Component } = await import("./features/companies/CompanyDetailPage.tsx");
           return { Component };
         },
       },
       {
-        path: "notes/:id/edit",
-        loader: ({ params }) => loadOr(() => apiFetch(`/notes/${params.id}`), null),
+        path: "settings",
+        loader: () => loadOr(() => apiFetch("/auth/me"), null),
         lazy: async () => {
-          const { default: Component } = await import("./features/notes/NoteFormPage.tsx");
+          const { default: Component } = await import("./features/settings/SettingsPage.tsx");
           return { Component };
         },
       },

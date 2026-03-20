@@ -1,51 +1,66 @@
+import { NavLink } from "react-router";
+import { Binoculars, SignOut } from "@phosphor-icons/react";
 import { useState } from "react";
-import { Link } from "react-router";
-import { Cube, SignOut } from "@phosphor-icons/react";
-import { useAuth } from "../shared/hooks/useAuth.ts";
-import { useOnline } from "../shared/hooks/useOnline.ts";
 import { APP_NAME } from "../shared/config.ts";
+import { useAuth } from "../shared/hooks/useAuth.ts";
 import ConfirmDialog from "./ConfirmDialog.tsx";
 
 export default function Header() {
   const { user, logout } = useAuth();
-  const isOnline = useOnline();
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSignOut, setShowSignOut] = useState(false);
 
   return (
-    <header className="header-glass sticky top-0 z-40">
-      <div className="flex items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <Cube size={24} weight="fill" className="text-app-accent" />
-          <span className="font-bold text-lg text-app-accent tracking-tight">
-            {APP_NAME}
-          </span>
-        </Link>
+    <header className="header-glass sticky top-0 z-40 border-b border-white/10">
+      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-8">
+        {/* Logo */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Binoculars size={22} weight="fill" className="text-[var(--color-app-accent)]" />
+          <span className="font-semibold text-sm text-white">{APP_NAME}</span>
+        </div>
 
-        <div className="flex items-center gap-2">
-          {!isOnline && (
-            <span className="text-xs text-app-text-muted bg-app-surface px-2 py-0.5 rounded-full border border-app-border-subtle">
-              Offline
-            </span>
-          )}
-          {user && (
-            <button
-              onClick={() => setShowLogoutConfirm(true)}
-              className="touch-target-44 text-app-text-muted hover:text-app-text transition-colors"
-              aria-label="Sign out"
+        {/* Nav */}
+        <nav className="flex items-center gap-1 flex-1">
+          {[
+            { to: "/", label: "Dashboard" },
+            { to: "/companies", label: "Companies" },
+            { to: "/settings", label: "Settings" },
+          ].map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/"}
+              className={({ isActive }) =>
+                `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-white/10 text-white"
+                    : "text-white/60 hover:text-white/90 hover:bg-white/5"
+                }`
+              }
             >
-              <SignOut size={18} />
-            </button>
-          )}
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* User */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-white/60">{user?.displayName}</span>
+          <button
+            onClick={() => setShowSignOut(true)}
+            className="p-1.5 rounded-md text-white/50 hover:text-white/90 hover:bg-white/5 transition-colors"
+            title="Sign out"
+          >
+            <SignOut size={18} />
+          </button>
         </div>
       </div>
 
       <ConfirmDialog
-        open={showLogoutConfirm}
-        onOpenChange={setShowLogoutConfirm}
-        title="Sign out?"
-        description="You will be returned to the login screen."
+        open={showSignOut}
+        onOpenChange={setShowSignOut}
+        title="Sign out"
+        description="Are you sure you want to sign out?"
         confirmLabel="Sign out"
-        variant="warn"
         onConfirm={logout}
       />
     </header>
