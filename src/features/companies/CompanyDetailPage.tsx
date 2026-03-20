@@ -74,7 +74,6 @@ export default function CompanyDetailPage() {
 
   return (
     <div>
-      {/* Breadcrumbs (LC-4) */}
       <Breadcrumbs
         crumbs={[
           { label: "Companies", to: "/companies" },
@@ -82,15 +81,15 @@ export default function CompanyDetailPage() {
         ]}
       />
 
-      {/* Company header */}
-      <div className="card-panel rounded-xl p-6 mb-6">
+      <div className="companies-detail-shell radius-shell p-6 mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-4">
             <CompanyLogo name={company.name} website={company.website} size={48} />
             <div>
-              <h1 className="text-2xl font-semibold text-app-text">{company.name}</h1>
-              <p className="text-app-text-muted text-sm mt-1">{company.industry}</p>
-              <div className="flex items-center gap-4 mt-3 text-sm text-app-text-muted flex-wrap">
+              <p className="dashboard-kicker">Company brief</p>
+              <h1 className="dashboard-title mt-1 text-2xl">{company.name}</h1>
+              <p className="companies-meta text-sm mt-1">{company.industry}</p>
+              <div className="flex items-center gap-4 mt-3 text-sm companies-meta flex-wrap">
                 {company.country && (
                   <span className="flex items-center gap-1">
                     <MapPin size={14} />
@@ -102,7 +101,7 @@ export default function CompanyDetailPage() {
                     href={company.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 hover:text-app-text transition-colors"
+                    className="companies-link flex items-center gap-1"
                   >
                     <Globe size={14} />
                     Website
@@ -117,8 +116,8 @@ export default function CompanyDetailPage() {
           <button
             onClick={togglePortfolio}
             disabled={loading}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 ${
-              inPortfolio ? "btn-ghost" : "btn-primary"
+            className={`min-w-[14rem] ${
+              inPortfolio ? "companies-action-secondary" : "companies-action-primary"
             }`}
           >
             {inPortfolio ? (
@@ -134,25 +133,32 @@ export default function CompanyDetailPage() {
         </div>
       </div>
 
-      {/* Full-width chart (LC-2) */}
-      <div className="card-panel rounded-xl p-6 mb-4">
-        <h2 className="text-sm font-medium text-app-text-muted mb-4">Headcount History</h2>
+      <div className="companies-detail-shell radius-shell p-6 mb-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="dashboard-kicker">Signal track</p>
+            <h2 className="dashboard-title mt-1 text-lg">Headcount History</h2>
+          </div>
+          <span className="companies-info-pill">
+            {company.snapshots.length} snapshot{company.snapshots.length !== 1 ? "s" : ""}
+          </span>
+        </div>
         <HeadcountChart snapshots={company.snapshots} />
       </div>
 
-      {/* Stats row below chart — 3 cols (LC-2) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="card-panel-subtle rounded-xl p-5">
-          <p className="text-xs text-app-text-muted mb-1">Latest Headcount</p>
-          <p className="text-2xl font-bold text-app-text tabular-nums">
+        <div className="companies-detail-shell radius-panel p-5">
+          <p className="dashboard-kicker mb-2">Latest headcount</p>
+          <p className="dashboard-data text-2xl font-bold tabular-nums">
             {latestHeadcount !== null ? latestHeadcount.toLocaleString() : "—"}
           </p>
+          <p className="companies-meta mt-2 text-xs">Most recent workforce reading.</p>
         </div>
-        <div className="card-panel-subtle rounded-xl p-5">
-          <p className="text-xs text-app-text-muted mb-1">vs Previous Month</p>
+        <div className="companies-detail-shell radius-panel p-5">
+          <p className="dashboard-kicker mb-2">Vs previous month</p>
           {changePercent !== null ? (
             <p
-              className={`text-2xl font-bold tabular-nums ${
+              className={`dashboard-data text-2xl font-bold tabular-nums ${
                 changePercent < 0 ? "text-app-red" : "text-app-green"
               }`}
             >
@@ -162,25 +168,33 @@ export default function CompanyDetailPage() {
           ) : (
             <p className="text-2xl font-bold text-app-text-dim">—</p>
           )}
+          <p className="companies-meta mt-2 text-xs">Short-term movement against the prior snapshot.</p>
         </div>
-        <div className="card-panel-subtle rounded-xl p-5">
-          <p className="text-xs text-app-text-muted mb-1">Data Range</p>
-          <p className="text-sm font-semibold text-app-text">
+        <div className="companies-detail-shell radius-panel p-5">
+          <p className="dashboard-kicker mb-2">Data range</p>
+          <p className="dashboard-title text-sm font-semibold">
             {company.snapshots.length > 0
               ? `${firstDate} – ${lastDate}`
               : "No data"}
           </p>
-          <p className="text-xs text-app-text-muted mt-1 tabular-nums">
+          <p className="companies-meta mt-2 text-xs tabular-nums">
             {company.snapshots.length} snapshot{company.snapshots.length !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
 
-      {/* News feed (LC-2: hide example.com links) */}
-      <div className="card-panel rounded-xl p-6">
-        <h2 className="text-sm font-medium text-app-text-muted mb-4">News & Sentiment</h2>
+      <div className="companies-detail-shell radius-shell p-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="dashboard-kicker">Market pulse</p>
+            <h2 className="dashboard-title mt-1 text-lg">News & Sentiment</h2>
+          </div>
+          <span className="companies-info-pill">
+            {company.news.length} article{company.news.length !== 1 ? "s" : ""}
+          </span>
+        </div>
         {company.news.length === 0 ? (
-          <p className="text-app-text-dim text-sm">No news available.</p>
+          <p className="companies-muted text-sm">No news available.</p>
         ) : (
           <div className="space-y-3">
             {company.news.map((article) => {
@@ -188,22 +202,22 @@ export default function CompanyDetailPage() {
               return (
                 <div
                   key={article.id}
-                  className="flex items-start justify-between gap-4 py-3 border-b border-app-border-subtle last:border-0"
+                  className="companies-news-row radius-panel flex items-start justify-between gap-4 px-4 py-4 last:border-0"
                 >
                   <div className="flex-1 min-w-0">
                     {isExampleUrl ? (
-                      <p className="text-sm text-app-text line-clamp-2">{article.title}</p>
+                      <p className="companies-link text-sm line-clamp-2">{article.title}</p>
                     ) : (
                       <a
                         href={article.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-app-text hover:text-app-accent line-clamp-2 transition-colors"
+                        className="companies-link text-sm line-clamp-2"
                       >
                         {article.title}
                       </a>
                     )}
-                    <div className="flex items-center gap-2 mt-1.5 text-xs text-app-text-dim">
+                    <div className="flex items-center gap-2 mt-1.5 text-xs companies-muted">
                       <span>{article.sourceName}</span>
                       <span>·</span>
                       <span>{new Date(article.publishedAt).toLocaleDateString()}</span>

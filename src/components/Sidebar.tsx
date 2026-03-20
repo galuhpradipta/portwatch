@@ -23,7 +23,7 @@ function NavItem({
       end={to === "/"}
       onClick={onClick}
       className={({ isActive }) =>
-        `sidebar-nav-item relative flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium ${
+        `sidebar-nav-item relative flex items-center gap-3 px-4 py-2.5 text-sm font-medium ${
           isActive
             ? "sidebar-link-active text-app-accent"
             : ""
@@ -33,7 +33,7 @@ function NavItem({
       {({ isActive }) => (
         <>
           {isActive && (
-            <span className="sidebar-active-glow absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-app-accent" />
+            <span className="sidebar-active-glow absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-[2px] bg-app-accent" />
           )}
           <Icon
             size={18}
@@ -62,7 +62,7 @@ export default function Sidebar({
   return (
     <aside className={`sidebar-panel w-60 flex flex-col z-30 ${isOpen ? "sidebar-open" : ""}`}>
       <div className="flex items-center gap-3 px-5 py-5 flex-shrink-0">
-        <div className="sidebar-brand-mark flex h-9 w-9 items-center justify-center rounded-xl flex-shrink-0">
+        <div className="sidebar-brand-mark flex h-9 w-9 items-center justify-center flex-shrink-0">
           <Binoculars size={18} weight="fill" className="text-app-accent" />
         </div>
         <div className="min-w-0 flex-1">
@@ -72,7 +72,7 @@ export default function Sidebar({
         {onClose && (
           <button
             onClick={onClose}
-            className="sidebar-close-button lg:hidden rounded-lg p-1.5"
+            className="sidebar-close-button lg:hidden p-1.5"
             aria-label="Close menu"
           >
             <X size={16} />
@@ -92,7 +92,7 @@ export default function Sidebar({
       <div className="mx-4 border-t border-app-border-subtle" />
 
       <div className="flex items-center gap-3 px-4 py-4">
-        <div className="sidebar-user-badge flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0">
+        <div className="sidebar-user-badge flex h-9 w-9 items-center justify-center flex-shrink-0">
           <span className="text-xs font-semibold text-app-accent">{initial}</span>
         </div>
         <span className="sidebar-user-name truncate text-sm flex-1">
@@ -102,13 +102,13 @@ export default function Sidebar({
           <Tooltip.Root>
             <Tooltip.Trigger
               onClick={() => setShowSignOut(true)}
-              className="sidebar-action-button flex-shrink-0 rounded-lg p-1.5"
+              className="sidebar-action-button flex-shrink-0 p-1.5"
             >
               <SignOut size={16} />
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Positioner side="right" sideOffset={4}>
-                <Tooltip.Popup className="sidebar-tooltip rounded-md px-2 py-1 text-xs">
+                <Tooltip.Popup className="sidebar-tooltip px-2 py-1 text-xs">
                   Sign out
                 </Tooltip.Popup>
               </Tooltip.Positioner>
