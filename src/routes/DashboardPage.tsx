@@ -281,153 +281,118 @@ function SummaryStats({
   sentimentAlertCount: number;
 }) {
   const sentimentState = getSentimentState(avgSentiment);
-  const circumference = 2 * Math.PI * 20;
-  const progress = (count / PORTFOLIO_LIMIT) * circumference;
   const utilization = Math.round((count / PORTFOLIO_LIMIT) * 100);
   const avgPerCompany = count > 0 ? Math.round(totalHeadcount / count) : null;
   const alertsActive = activeAlerts > 0;
+  const affectedShare = count > 0 ? Math.round((activeAlerts / count) * 100) : 0;
 
   return (
-    <div className="mb-6 grid grid-cols-1 gap-4 md:auto-rows-[minmax(9.5rem,auto)] md:grid-cols-12">
-      <div className="dashboard-metric dashboard-metric-primary md:col-span-5 md:row-span-2 animate-fade-in-up animate-stagger-1">
+    <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-4">
+      <div className="dashboard-metric dashboard-metric-primary dashboard-metric-compact animate-fade-in-up animate-stagger-1">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="dashboard-kicker">Live risk</p>
-            <h2 className="dashboard-copy mt-2 text-sm font-medium">Threat level</h2>
+            <h2 className="dashboard-copy mt-1 text-xs font-medium">Threat level</h2>
           </div>
           <Warning
-            size={18}
+            size={16}
             weight={alertsActive ? "fill" : "regular"}
             className={alertsActive ? "text-app-red" : "text-app-text-dim"}
           />
         </div>
 
-        <div className="mt-6 flex items-end gap-4">
+        <div className="mt-4 flex items-end justify-between gap-3">
           <div
-            className={`dashboard-data text-5xl font-semibold ${
+            className={`dashboard-data text-3xl font-semibold ${
               alertsActive ? "text-app-red" : "text-app-text"
             }`}
           >
             {activeAlerts}
           </div>
-          <div className="pb-1">
+          <div className="text-right">
             <div
-              className={`dashboard-kicker ${alertsActive ? "text-app-red/80" : "text-app-text-dim"}`}
+              className={`dashboard-kicker ${alertsActive ? "text-app-red/80" : "text-app-text-dim"} text-[9px]`}
             >
               {alertsActive ? "Alerts open" : "Clear"}
             </div>
-            <div className="dashboard-copy mt-1 text-sm">
-              {alertsActive
-                ? "Active monitoring is required"
-                : "No active issues across the portfolio"}
+            <div className="dashboard-copy mt-1 text-xs">
+              {affectedShare}% affected
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          <span className={headcountAlertCount > 0 ? "dashboard-chip dashboard-chip-negative" : "dashboard-chip dashboard-chip-neutral"}>
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          <span className={headcountAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-negative" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"}>
             {headcountAlertCount} headcount
           </span>
-          <span className={sentimentAlertCount > 0 ? "dashboard-chip dashboard-chip-caution" : "dashboard-chip dashboard-chip-neutral"}>
+          <span className={sentimentAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-caution" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"}>
             {sentimentAlertCount} sentiment
           </span>
-          <span className="dashboard-chip dashboard-chip-neutral">
-            {count > 0 ? `${Math.round((activeAlerts / count) * 100)}% of portfolio` : "No portfolio"}
+          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral">
+            {alertsActive ? "Monitoring" : "Idle"}
           </span>
-        </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <div className="dashboard-subtle-surface rounded-2xl p-3">
-            <div className="dashboard-kicker">Scan mode</div>
-            <div className={`mt-2 text-sm font-semibold ${alertsActive ? "text-app-text" : "text-app-text-muted"}`}>
-              {alertsActive ? "Monitoring" : "Idle"}
-            </div>
-          </div>
-          <div className="dashboard-subtle-surface rounded-2xl p-3">
-            <div className="dashboard-kicker">Active share</div>
-            <div className="mt-2 text-sm font-semibold text-app-text">
-              {utilization}% of capacity
-            </div>
-          </div>
         </div>
       </div>
 
-      <div className="dashboard-metric md:col-span-3 animate-fade-in-up animate-stagger-2">
+      <div className="dashboard-metric dashboard-metric-compact animate-fade-in-up animate-stagger-2">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="dashboard-kicker">Portfolio</p>
-            <h2 className="dashboard-copy mt-2 text-sm font-medium">Tracked companies</h2>
+            <h2 className="dashboard-copy mt-1 text-xs font-medium">Tracked companies</h2>
           </div>
           <Buildings size={16} className="text-app-text-dim" />
         </div>
-        <div className="mt-6 flex items-end justify-between gap-4">
+
+        <div className="mt-4 flex items-end justify-between gap-3">
           <div>
-            <div className="dashboard-data text-4xl font-semibold">{count}</div>
-            <div className="dashboard-copy mt-1 text-xs">of {PORTFOLIO_LIMIT} slots filled</div>
+            <div className="dashboard-data text-3xl font-semibold">{count}</div>
+            <div className="dashboard-copy mt-1 text-xs">of {PORTFOLIO_LIMIT} slots</div>
           </div>
-          <div className="relative h-16 w-16 flex-shrink-0">
-            <svg className="h-full w-full -rotate-90" viewBox="0 0 48 48">
-              <circle
-                cx="24"
-                cy="24"
-                r="20"
-                fill="none"
-                stroke="rgba(255,255,255,0.06)"
-                strokeWidth="4"
-              />
-              <circle
-                cx="24"
-                cy="24"
-                r="20"
-                fill="none"
-                stroke="var(--color-app-accent)"
-                strokeWidth="4"
-                strokeDasharray={`${progress} ${circumference}`}
-                strokeLinecap="round"
-              />
-            </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-app-text">
-              {count}
-            </span>
-          </div>
+          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral">
+            {utilization}% full
+          </span>
         </div>
-        <div className="mt-5 space-y-2">
+
+        <div className="mt-3 space-y-1.5">
           <div className="h-2 overflow-hidden rounded-full bg-app-border">
             <div
               className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-app-accent-dim),var(--color-app-accent))]"
               style={{ width: `${utilization}%` }}
             />
           </div>
-          <div className="dashboard-kicker flex items-center justify-between">
+          <div className="dashboard-metric-meta">
             <span>Utilization</span>
-            <span>{utilization}%</span>
+            <span className="dashboard-data-muted">{utilization}%</span>
           </div>
         </div>
       </div>
 
-      <div className="dashboard-metric md:col-span-4 animate-fade-in-up animate-stagger-3">
+      <div className="dashboard-metric dashboard-metric-compact animate-fade-in-up animate-stagger-3">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="dashboard-kicker">Total headcount</p>
-            <h2 className="dashboard-copy mt-2 text-sm font-medium">Across all companies</h2>
+            <h2 className="dashboard-copy mt-1 text-xs font-medium">Across all companies</h2>
           </div>
           <Users size={16} className="text-app-accent/50" />
         </div>
-        <div className="dashboard-data mt-6 text-4xl font-semibold">
+
+        <div className="dashboard-data mt-4 text-3xl font-semibold">
           {totalHeadcount > 0 ? totalHeadcount.toLocaleString() : "—"}
         </div>
-        <div className="dashboard-copy mt-2 text-sm">
-          {avgPerCompany !== null
-            ? `${avgPerCompany.toLocaleString()} average per company`
-            : "No headcount data yet"}
+
+        <div className="dashboard-metric-meta mt-3">
+          <span>Average per company</span>
+          <span className="dashboard-data-muted">
+            {avgPerCompany !== null ? avgPerCompany.toLocaleString() : "No data"}
+          </span>
         </div>
       </div>
 
-      <div className="dashboard-metric md:col-span-7 animate-fade-in-up animate-stagger-4">
+      <div className="dashboard-metric dashboard-metric-compact animate-fade-in-up animate-stagger-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="dashboard-kicker">Avg sentiment</p>
-            <h2 className="dashboard-copy mt-2 text-sm font-medium">Signal health</h2>
+            <h2 className="dashboard-copy mt-1 text-xs font-medium">Signal health</h2>
           </div>
           <Pulse
             size={16}
@@ -435,26 +400,26 @@ function SummaryStats({
           />
         </div>
 
-        <div className="mt-6 flex flex-wrap items-end gap-4">
-          <div className={`dashboard-data text-4xl font-semibold ${sentimentState.tone}`}>
+        <div className="mt-4 flex items-end justify-between gap-3">
+          <div className={`dashboard-data text-3xl font-semibold ${sentimentState.tone}`}>
             {avgSentiment !== null ? avgSentiment.toFixed(0) : "—"}
           </div>
           <span
             className={
               avgSentiment === null
-                ? "dashboard-chip dashboard-chip-neutral"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"
                 : avgSentiment <= 40
-                ? "dashboard-chip dashboard-chip-positive"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-positive"
                 : avgSentiment <= 70
-                ? "dashboard-chip dashboard-chip-warning"
-                : "dashboard-chip dashboard-chip-negative"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-warning"
+                : "dashboard-chip dashboard-chip-compact dashboard-chip-negative"
             }
           >
             {sentimentState.label}
           </span>
         </div>
 
-        <div className="mt-5 space-y-2">
+        <div className="mt-3 space-y-1.5">
           {avgSentiment !== null && (
             <div className="h-2 overflow-hidden rounded-full bg-app-border">
               <div
@@ -463,16 +428,11 @@ function SummaryStats({
               />
             </div>
           )}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="dashboard-subtle-surface dashboard-kicker rounded-2xl px-3 py-2 text-center">
-              Calm
-            </div>
-            <div className="dashboard-subtle-surface dashboard-kicker rounded-2xl px-3 py-2 text-center">
-              Mixed
-            </div>
-            <div className="dashboard-subtle-surface dashboard-kicker rounded-2xl px-3 py-2 text-center">
-              Stressed
-            </div>
+          <div className="dashboard-metric-meta">
+            <span>Quality band</span>
+            <span className={avgSentiment === null ? "dashboard-data-muted" : sentimentState.tone}>
+              {sentimentState.label}
+            </span>
           </div>
         </div>
       </div>
