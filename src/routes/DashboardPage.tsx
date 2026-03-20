@@ -2,7 +2,9 @@ import { useLoaderData, useNavigate, useRevalidator } from "react-router";
 import { useState } from "react";
 import { ArrowsClockwise, ArrowUp, ArrowDown, Buildings, Warning, Users, Pulse } from "@phosphor-icons/react";
 import { useApi } from "../shared/hooks/useApi.ts";
+import { PORTFOLIO_LIMIT } from "../shared/config.ts";
 import type { PortfolioCompany } from "../shared/types.ts";
+import CompanyLogo from "../components/CompanyLogo.tsx";
 
 type SortKey = "name" | "headcount" | "change" | "sentiment";
 type SortDir = "asc" | "desc";
@@ -65,13 +67,15 @@ export default function DashboardPage() {
       {/* Header row */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-app-text">Portfolio</h1>
-          <p className="text-sm text-app-text-muted mt-0.5">{portfolio.length} / 10 companies</p>
+          <h1 className="text-2xl font-semibold text-app-text">Portfolio</h1>
+          <p className="text-sm text-app-text-muted mt-0.5">
+            {portfolio.length} / {PORTFOLIO_LIMIT} companies
+          </p>
         </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing || portfolio.length === 0}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-app-accent)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+          className="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
         >
           <ArrowsClockwise size={16} className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Refreshing..." : "Refresh All"}
@@ -84,7 +88,7 @@ export default function DashboardPage() {
           <p className="text-app-text-muted mb-4">Your portfolio is empty</p>
           <button
             onClick={() => navigate("/companies")}
-            className="px-4 py-2 rounded-lg bg-[var(--color-app-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+            className="btn-primary px-4 py-2 rounded-lg text-sm"
           >
             Browse Companies
           </button>
@@ -108,8 +112,8 @@ export default function DashboardPage() {
           )}
 
           {/* Zone 3: Enhanced Portfolio Table */}
-          <div className="card-panel rounded-xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="card-panel rounded-xl overflow-hidden overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
               <thead>
                 <tr className="border-b border-app-border">
                   {(
@@ -122,7 +126,7 @@ export default function DashboardPage() {
                   ).map(({ key, label }) => (
                     <th
                       key={key}
-                      className="px-5 py-3 text-left text-xs uppercase tracking-wider font-semibold text-app-text-muted cursor-pointer hover:text-app-text select-none transition-colors"
+                      className="px-5 py-3 text-left text-xs font-semibold text-app-text-muted cursor-pointer hover:text-app-text select-none transition-colors"
                       onClick={() => handleSort(key)}
                     >
                       <span className="flex items-center gap-1">
@@ -132,7 +136,7 @@ export default function DashboardPage() {
                       </span>
                     </th>
                   ))}
-                  <th className="px-5 py-3 text-left text-xs uppercase tracking-wider font-semibold text-app-text-muted">
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-app-text-muted">
                     Status
                   </th>
                 </tr>
@@ -145,9 +149,14 @@ export default function DashboardPage() {
                     onClick={() => navigate(`/companies/${company.id}`)}
                   >
                     <td className="px-5 py-4">
-                      <div className="font-semibold text-app-text">{company.name}</div>
-                      <div className="text-xs font-medium text-app-accent mt-0.5">
-                        {company.industry}
+                      <div className="flex items-center gap-2.5">
+                        <CompanyLogo name={company.name} website={company.website} size={28} />
+                        <div>
+                          <div className="font-semibold text-app-text">{company.name}</div>
+                          <div className="text-xs font-medium text-app-text-muted mt-0.5">
+                            {company.industry}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-5 py-4 font-bold tabular-nums text-app-text">
@@ -196,43 +205,112 @@ function SummaryStats({
       ? "text-app-yellow"
       : "text-app-red";
 
+  // Progress ring geometry (r=20, circumference ≈ 125.7)
+  const circumference = 2 * Math.PI * 20;
+  const progress = (count / PORTFOLIO_LIMIT) * circumference;
+
+  const alertsActive = activeAlerts > 0;
+
   return (
-    <div className="grid grid-cols-4 gap-4 mb-6">
-      <div className="stat-card card-panel rounded-xl p-4">
-        <Buildings size={20} className="text-app-text-dim mb-3" />
-        <div className="text-2xl font-extrabold text-app-text tabular-nums">
-          {count}
-          <span className="text-base font-semibold text-app-text-muted">/10</span>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {/* Portfolio Count — progress ring */}
+      <div className="stat-card card-panel-subtle rounded-xl p-4 animate-fade-in-up animate-stagger-1">
+        <div className="flex items-start justify-between mb-2">
+          <span className="text-xs text-app-text-muted font-medium">Portfolio</span>
+          <Buildings size={16} className="text-app-text-dim" />
         </div>
-        <div className="text-xs text-app-text-muted mt-1">Portfolio</div>
+        <div className="flex items-center gap-3">
+          <div className="relative w-12 h-12 flex-shrink-0">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 48 48">
+              <circle
+                cx="24" cy="24" r="20"
+                fill="none"
+                stroke="rgba(255,255,255,0.06)"
+                strokeWidth="4"
+              />
+              <circle
+                cx="24" cy="24" r="20"
+                fill="none"
+                stroke="var(--color-app-accent)"
+                strokeWidth="4"
+                strokeDasharray={`${progress} ${circumference}`}
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-app-text">
+              {count}
+            </span>
+          </div>
+          <div>
+            <div className="text-xl font-extrabold text-app-text tabular-nums">
+              / {PORTFOLIO_LIMIT}
+            </div>
+            <div className="text-xs text-app-text-muted">companies</div>
+          </div>
+        </div>
       </div>
-      <div className="stat-card card-panel rounded-xl p-4">
-        <Users size={20} className="text-app-text-dim mb-3" />
+
+      {/* Total Headcount */}
+      <div className="stat-card card-panel-subtle rounded-xl p-4 animate-fade-in-up animate-stagger-2">
+        <div className="flex items-start justify-between mb-2">
+          <span className="text-xs text-app-text-muted font-medium">Total Headcount</span>
+          <Users size={16} className="text-app-accent/50" />
+        </div>
         <div className="text-2xl font-extrabold text-app-text tabular-nums">
           {totalHeadcount > 0 ? totalHeadcount.toLocaleString() : "—"}
         </div>
-        <div className="text-xs text-app-text-muted mt-1">Total Headcount</div>
+        <div className="text-xs text-app-text-muted mt-1">across all companies</div>
       </div>
-      <div className="stat-card card-panel rounded-xl p-4">
-        <Pulse size={20} className="text-app-text-dim mb-3" />
+
+      {/* Avg Sentiment */}
+      <div className="stat-card card-panel-subtle rounded-xl p-4 animate-fade-in-up animate-stagger-3">
+        <div className="flex items-start justify-between mb-2">
+          <span className="text-xs text-app-text-muted font-medium">Avg Sentiment</span>
+          <Pulse size={16} className={avgSentiment !== null ? sentimentColor : "text-app-text-dim"} />
+        </div>
         <div className={`text-2xl font-extrabold tabular-nums ${sentimentColor}`}>
           {avgSentiment !== null ? avgSentiment.toFixed(0) : "—"}
         </div>
-        <div className="text-xs text-app-text-muted mt-1">Avg Sentiment</div>
+        <div className="mt-2">
+          {avgSentiment !== null && (
+            <div className="w-full h-1.5 rounded-full bg-app-border overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  avgSentiment <= 40 ? "bg-green-500" : avgSentiment <= 70 ? "bg-yellow-500" : "bg-red-500"
+                }`}
+                style={{ width: `${avgSentiment}%` }}
+              />
+            </div>
+          )}
+        </div>
       </div>
-      <div className="stat-card card-panel rounded-xl p-4">
-        <Warning
-          size={20}
-          className={`mb-3 ${activeAlerts > 0 ? "text-app-red" : "text-app-text-dim"}`}
-        />
+
+      {/* Active Alerts — red-tinted when active */}
+      <div
+        className={`stat-card rounded-xl p-4 animate-fade-in-up animate-stagger-4 transition-colors ${
+          alertsActive
+            ? "card-panel-elevated bg-red-500/5 border border-red-500/20"
+            : "card-panel-subtle"
+        }`}
+      >
+        <div className="flex items-start justify-between mb-2">
+          <span className="text-xs text-app-text-muted font-medium">Active Alerts</span>
+          <Warning
+            size={16}
+            weight={alertsActive ? "fill" : "regular"}
+            className={alertsActive ? "text-app-red" : "text-app-text-dim"}
+          />
+        </div>
         <div
           className={`text-2xl font-extrabold tabular-nums ${
-            activeAlerts > 0 ? "text-app-red" : "text-app-text"
+            alertsActive ? "text-app-red" : "text-app-text"
           }`}
         >
           {activeAlerts}
         </div>
-        <div className="text-xs text-app-text-muted mt-1">Active Alerts</div>
+        <div className="text-xs text-app-text-muted mt-1">
+          {alertsActive ? `${activeAlerts} compan${activeAlerts === 1 ? "y needs" : "ies need"} attention` : "All clear"}
+        </div>
       </div>
     </div>
   );
@@ -246,9 +324,9 @@ function AlertsPanel({
   onNavigate: (id: string) => void;
 }) {
   return (
-    <div className="card-panel rounded-xl p-5 mb-6">
-      <h2 className="text-xs uppercase tracking-wider font-semibold text-app-text-muted mb-3">
-        Active Alerts
+    <div className="card-panel-elevated rounded-xl p-5 mb-6">
+      <h2 className="text-sm font-semibold text-app-text-muted mb-3">
+        Active alerts
       </h2>
       <div className="space-y-1">
         {alerts.map((company) => (
@@ -301,7 +379,7 @@ function ChangePill({ pct }: { pct: number | null }) {
 
 function SentimentBar({ score }: { score: number | null }) {
   if (score === null) return <span className="text-app-text-dim">—</span>;
-  const color =
+  const gradientStyle =
     score <= 30
       ? "bg-green-500"
       : score <= 60
@@ -311,8 +389,11 @@ function SentimentBar({ score }: { score: number | null }) {
       : "bg-red-500";
   return (
     <span className="flex items-center gap-2">
-      <span className="w-10 h-1.5 rounded-full bg-app-border overflow-hidden flex-shrink-0">
-        <span className={`h-full rounded-full block ${color}`} style={{ width: `${score}%` }} />
+      <span className="w-16 h-2 rounded-full bg-app-border overflow-hidden flex-shrink-0">
+        <span
+          className={`h-full rounded-full block ${gradientStyle}`}
+          style={{ width: `${score}%` }}
+        />
       </span>
       <span className="text-app-text-muted text-xs tabular-nums font-medium">
         {score.toFixed(0)}

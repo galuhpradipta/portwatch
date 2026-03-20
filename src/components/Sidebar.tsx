@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { Binoculars, Buildings, ChartLineUp, GearSix, SignOut } from "@phosphor-icons/react";
+import { Binoculars, Buildings, ChartLineUp, GearSix, SignOut, X } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Tooltip } from "@base-ui/react/tooltip";
 import { APP_NAME } from "../shared/config.ts";
@@ -10,15 +10,18 @@ function NavItem({
   to,
   label,
   Icon,
+  onClick,
 }: {
   to: string;
   label: string;
   Icon: React.ElementType;
+  onClick?: () => void;
 }) {
   return (
     <NavLink
       to={to}
       end={to === "/"}
+      onClick={onClick}
       className={({ isActive }) =>
         `relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
           isActive
@@ -44,31 +47,47 @@ function NavItem({
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({
+  isOpen = false,
+  onClose,
+}: {
+  isOpen?: boolean;
+  onClose?: () => void;
+}) {
   const { user, logout } = useAuth();
   const [showSignOut, setShowSignOut] = useState(false);
 
   const initial = user?.displayName?.[0]?.toUpperCase() ?? "?";
 
   return (
-    <aside className="sidebar-panel sticky top-0 h-screen w-60 flex flex-col flex-shrink-0 z-30">
-      {/* Logo */}
+    <aside className={`sidebar-panel w-60 flex flex-col z-30 ${isOpen ? "sidebar-open" : ""}`}>
+      {/* Logo row */}
       <div className="flex items-center gap-3 px-5 py-5 flex-shrink-0">
         <div className="w-8 h-8 rounded-lg bg-app-accent/15 flex items-center justify-center flex-shrink-0">
           <Binoculars size={18} weight="fill" className="text-app-accent" />
         </div>
-        <span className="font-semibold text-sm text-app-text">{APP_NAME}</span>
+        <span className="font-semibold text-sm text-app-text flex-1">{APP_NAME}</span>
+        {/* Close button — mobile only */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1 rounded-md text-app-text-muted hover:text-app-text transition-colors"
+            aria-label="Close menu"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* Primary nav */}
       <nav className="flex-1 flex flex-col gap-1 px-3 pt-2">
-        <NavItem to="/" label="Dashboard" Icon={ChartLineUp} />
-        <NavItem to="/companies" label="Companies" Icon={Buildings} />
+        <NavItem to="/" label="Dashboard" Icon={ChartLineUp} onClick={onClose} />
+        <NavItem to="/companies" label="Companies" Icon={Buildings} onClick={onClose} />
       </nav>
 
       {/* Secondary nav */}
       <div className="px-3 pb-3">
-        <NavItem to="/settings" label="Settings" Icon={GearSix} />
+        <NavItem to="/settings" label="Settings" Icon={GearSix} onClick={onClose} />
       </div>
 
       {/* Separator */}

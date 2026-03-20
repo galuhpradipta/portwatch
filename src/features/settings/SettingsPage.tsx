@@ -40,7 +40,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-xl font-semibold text-app-text mb-6">Settings</h1>
+      <h1 className="text-2xl font-semibold text-app-text mb-6">Settings</h1>
 
       <div className="card-panel rounded-xl p-6 space-y-6">
         {/* Display name */}
