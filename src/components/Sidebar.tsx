@@ -23,10 +23,10 @@ function NavItem({
       end={to === "/"}
       onClick={onClick}
       className={({ isActive }) =>
-        `relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+        `sidebar-nav-item relative flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium ${
           isActive
             ? "sidebar-link-active text-app-accent"
-            : "text-app-text-muted hover:text-app-text hover:bg-app-surface-hover"
+            : ""
         }`
       }
     >
@@ -61,17 +61,18 @@ export default function Sidebar({
 
   return (
     <aside className={`sidebar-panel w-60 flex flex-col z-30 ${isOpen ? "sidebar-open" : ""}`}>
-      {/* Logo row */}
       <div className="flex items-center gap-3 px-5 py-5 flex-shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-app-accent/15 flex items-center justify-center flex-shrink-0">
+        <div className="sidebar-brand-mark flex h-9 w-9 items-center justify-center rounded-xl flex-shrink-0">
           <Binoculars size={18} weight="fill" className="text-app-accent" />
         </div>
-        <span className="font-semibold text-sm text-app-text flex-1">{APP_NAME}</span>
-        {/* Close button — mobile only */}
+        <div className="min-w-0 flex-1">
+          <div className="sidebar-brand-name truncate">{APP_NAME}</div>
+          <div className="dashboard-kicker mt-1 text-[9px]">Portfolio desk</div>
+        </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-1 rounded-md text-app-text-muted hover:text-app-text transition-colors"
+            className="sidebar-close-button lg:hidden rounded-lg p-1.5"
             aria-label="Close menu"
           >
             <X size={16} />
@@ -79,39 +80,35 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Primary nav */}
       <nav className="flex-1 flex flex-col gap-1 px-3 pt-2">
         <NavItem to="/" label="Dashboard" Icon={ChartLineUp} onClick={onClose} />
         <NavItem to="/companies" label="Companies" Icon={Buildings} onClick={onClose} />
       </nav>
 
-      {/* Secondary nav */}
       <div className="px-3 pb-3">
         <NavItem to="/settings" label="Settings" Icon={GearSix} onClick={onClose} />
       </div>
 
-      {/* Separator */}
       <div className="mx-4 border-t border-app-border-subtle" />
 
-      {/* User area */}
       <div className="flex items-center gap-3 px-4 py-4">
-        <div className="w-8 h-8 rounded-full bg-app-accent/20 flex items-center justify-center flex-shrink-0">
+        <div className="sidebar-user-badge flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0">
           <span className="text-xs font-semibold text-app-accent">{initial}</span>
         </div>
-        <span className="text-sm text-app-text-muted truncate flex-1">
+        <span className="sidebar-user-name truncate text-sm flex-1">
           {user?.displayName}
         </span>
         <Tooltip.Provider>
           <Tooltip.Root>
             <Tooltip.Trigger
               onClick={() => setShowSignOut(true)}
-              className="p-1.5 rounded-md text-app-text-muted hover:text-app-text hover:bg-app-surface-hover transition-colors flex-shrink-0"
+              className="sidebar-action-button flex-shrink-0 rounded-lg p-1.5"
             >
               <SignOut size={16} />
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Positioner side="right" sideOffset={4}>
-                <Tooltip.Popup className="px-2 py-1 rounded-md bg-app-text text-white text-xs shadow-md">
+                <Tooltip.Popup className="sidebar-tooltip rounded-md px-2 py-1 text-xs">
                   Sign out
                 </Tooltip.Popup>
               </Tooltip.Positioner>
