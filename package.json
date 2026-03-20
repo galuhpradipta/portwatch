@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
+    "dev:api": "wrangler pages dev --port 8787 --proxy 5173 --persist-to .wrangler/state",
     "build": "tsc -b && vp build",
     "lint": "eslint .",
     "preview": "vp preview",
