@@ -15,6 +15,7 @@ export type PortfolioCompany = {
   industry: string;
   employeeRange: string;
   logoUrl: string;
+  website: string;
   country: string;
   latestHeadcount: number | null;
   previousHeadcount: number | null;

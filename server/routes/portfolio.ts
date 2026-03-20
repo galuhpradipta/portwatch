@@ -20,6 +20,7 @@ type PortfolioCompanyResult = {
   industry: string;
   employeeRange: string;
   logoUrl: string;
+  website: string;
   country: string;
   latestHeadcount: number | null;
   previousHeadcount: number | null;
@@ -88,6 +89,7 @@ async function getEnrichedPortfolio(
         industry: company.industry,
         employeeRange: company.employeeRange,
         logoUrl: company.logoUrl,
+        website: company.website,
         country: company.country,
         latestHeadcount,
         previousHeadcount,
