@@ -3,9 +3,11 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 import "./index.css";
 import { router } from "./router.ts";
+import { Toast } from "@base-ui/react/toast";
+import { toastManager } from "./shared/store/toastStore.ts";
 
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
-import Toast from "./components/Toast.tsx";
+import ToastList from "./components/Toast.tsx";
 
 // eslint-disable-next-line react-refresh/only-export-components
 function PageLoader() {
@@ -19,11 +21,13 @@ function PageLoader() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ErrorBoundary>
-      <Suspense fallback={<PageLoader />}>
-        <RouterProvider router={router} />
-      </Suspense>
-      <Toast />
-    </ErrorBoundary>
+    <Toast.Provider toastManager={toastManager} timeout={3500}>
+      <ErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          <RouterProvider router={router} />
+        </Suspense>
+        <ToastList />
+      </ErrorBoundary>
+    </Toast.Provider>
   </StrictMode>,
 );

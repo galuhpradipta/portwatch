@@ -54,12 +54,12 @@ export default function CompaniesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Companies</h1>
-          <p className="text-sm text-white/50 mt-0.5">
+          <h1 className="text-xl font-semibold text-app-text">Companies</h1>
+          <p className="text-sm text-app-text-muted mt-0.5">
             Browse and add companies to your portfolio
           </p>
         </div>
-        <span className="text-sm text-white/50 glass-panel px-3 py-1.5 rounded-lg">
+        <span className="text-sm text-app-text-muted card-panel px-3 py-1.5 rounded-lg">
           {portfolioIds.size} / 10 in portfolio
         </span>
       </div>
@@ -68,14 +68,14 @@ export default function CompaniesPage() {
       <div className="relative mb-6">
         <MagnifyingGlass
           size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-app-text-dim"
         />
         <input
           type="text"
           placeholder="Search companies..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[var(--color-app-accent)]/50"
+          className="w-full bg-app-surface border border-app-border rounded-lg pl-9 pr-4 py-2 text-sm text-app-text placeholder:text-app-text-dim focus:outline-none focus:border-[var(--color-app-accent)]/50"
         />
       </div>
 
@@ -88,7 +88,7 @@ export default function CompaniesPage() {
           return (
             <div
               key={company.id}
-              className="glass-panel rounded-xl p-4 hover:bg-white/5 transition-colors"
+              className="card-panel rounded-xl p-4 hover:bg-app-surface-hover transition-colors"
             >
               <div
                 className="cursor-pointer"
@@ -96,15 +96,15 @@ export default function CompaniesPage() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h3 className="font-medium text-white text-sm leading-tight">{company.name}</h3>
+                    <h3 className="font-medium text-app-text text-sm leading-tight">{company.name}</h3>
                     <p className="text-xs text-[var(--color-app-accent)] mt-0.5">{company.industry}</p>
                   </div>
                 </div>
-                <div className="text-xs text-white/40 space-y-1 mt-3">
+                <div className="text-xs text-app-text-dim space-y-1 mt-3">
                   <div>{company.country}</div>
                   <div>{company.employeeRange} employees</div>
                   {company.latestHeadcount !== null && (
-                    <div className="text-white/60">{company.latestHeadcount.toLocaleString()} headcount</div>
+                    <div className="text-app-text-muted">{company.latestHeadcount.toLocaleString()} headcount</div>
                   )}
                 </div>
               </div>
@@ -116,7 +116,7 @@ export default function CompaniesPage() {
                 disabled={isLoading}
                 className={`mt-3 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   inPortfolio
-                    ? "bg-white/10 text-white/70 hover:bg-white/15"
+                    ? "bg-gray-100 text-app-text-muted hover:bg-gray-200"
                     : "bg-[var(--color-app-accent)]/20 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/30"
                 } disabled:opacity-50`}
               >
@@ -136,7 +136,7 @@ export default function CompaniesPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-12 text-white/40">No companies match your search.</div>
+        <div className="text-center py-12 text-app-text-dim">No companies match your search.</div>
       )}
     </div>
   );

@@ -1,5 +1,7 @@
 import { useLoaderData } from "react-router";
 import { useState } from "react";
+import { Field } from "@base-ui/react/field";
+import { Slider } from "@base-ui/react/slider";
 import { useApi } from "../../shared/hooks/useApi.ts";
 import { useAuthStore } from "../../shared/store/authStore.ts";
 
@@ -38,50 +40,63 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-xl font-semibold text-white mb-6">Settings</h1>
+      <h1 className="text-xl font-semibold text-app-text mb-6">Settings</h1>
 
-      <div className="glass-panel rounded-xl p-6 space-y-6">
+      <div className="card-panel rounded-xl p-6 space-y-6">
         {/* Display name */}
-        <div>
-          <label className="block text-sm font-medium text-white/70 mb-2">Display Name</label>
-          <input
+        <Field.Root>
+          <Field.Label className="block text-sm font-medium text-app-text-muted mb-2">
+            Display Name
+          </Field.Label>
+          <Field.Control
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[var(--color-app-accent)]/50"
+            className="w-full bg-app-surface border border-app-border rounded-lg px-4 py-2 text-sm text-app-text placeholder:text-app-text-dim focus:outline-none focus:border-[var(--color-app-accent)]/50"
           />
-        </div>
+        </Field.Root>
 
         {/* Email (read-only) */}
-        <div>
-          <label className="block text-sm font-medium text-white/70 mb-2">Email</label>
-          <input
+        <Field.Root>
+          <Field.Label className="block text-sm font-medium text-app-text-muted mb-2">
+            Email
+          </Field.Label>
+          <Field.Control
             type="email"
             value={me.email}
             disabled
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white/40 cursor-not-allowed"
+            className="w-full bg-app-surface border border-app-border rounded-lg px-4 py-2 text-sm text-app-text-dim cursor-not-allowed"
           />
-        </div>
+        </Field.Root>
 
         {/* Headcount drop threshold */}
         <div>
-          <label className="block text-sm font-medium text-white/70 mb-1">
+          <label className="block text-sm font-medium text-app-text-muted mb-1">
             Headcount Drop Alert Threshold
           </label>
-          <p className="text-xs text-white/40 mb-3">
+          <p className="text-xs text-app-text-dim mb-3">
             Alert when headcount drops by more than {threshold}%
           </p>
-          <input
-            type="range"
+          <Slider.Root
+            value={threshold}
+            onValueChange={(val) => setThreshold(val as number)}
             min={1}
             max={50}
-            value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
-            className="w-full accent-[var(--color-app-accent)]"
-          />
-          <div className="flex justify-between text-xs text-white/40 mt-1">
+            className="w-full py-2"
+          >
+            <Slider.Control className="flex items-center w-full h-5 relative cursor-pointer">
+              <Slider.Track className="relative h-1.5 w-full rounded-full bg-app-border">
+                <Slider.Indicator className="absolute h-full rounded-full bg-[var(--color-app-accent)]" />
+                <Slider.Thumb
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[var(--color-app-accent)] shadow-sm border-2 border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-app-accent)]/40"
+                  getAriaValueText={(formattedValue) => `${formattedValue} percent`}
+                />
+              </Slider.Track>
+            </Slider.Control>
+          </Slider.Root>
+          <div className="flex justify-between text-xs text-app-text-dim mt-1">
             <span>1%</span>
-            <span className="text-white font-medium">{threshold}%</span>
+            <span className="text-app-text font-medium">{threshold}%</span>
             <span>50%</span>
           </div>
         </div>

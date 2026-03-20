@@ -1,27 +1,14 @@
-import { create } from "zustand";
+import { Toast } from "@base-ui/react/toast";
 
-export type Toast = {
-  id: string;
-  message: string;
-  type: "success" | "error" | "info";
+export const toastManager = Toast.createToastManager();
+
+type ToastType = "success" | "error" | "info";
+
+// Backward-compatible interface for useApi.ts and apiFetch.ts
+export const useToastStore = {
+  getState: () => ({
+    addToast(message: string, type: ToastType = "info") {
+      toastManager.add({ title: message, type, timeout: 3500 });
+    },
+  }),
 };
-
-type ToastStore = {
-  toasts: Toast[];
-  addToast: (message: string, type?: Toast["type"]) => void;
-  removeToast: (id: string) => void;
-};
-
-export const useToastStore = create<ToastStore>()((set) => ({
-  toasts: [],
-  addToast: (message, type = "info") => {
-    const id = crypto.randomUUID();
-    set((s) => ({ toasts: [...s.toasts, { id, message, type }] }));
-    setTimeout(
-      () => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
-      3500,
-    );
-  },
-  removeToast: (id) =>
-    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
-}));

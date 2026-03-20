@@ -1,31 +1,30 @@
 @import "tailwindcss";
 
 /* ================================================
-   APP DESIGN SYSTEM — viteplus-cf-template
-   Neutral dark theme with blue accent.
-   Rename "app-*" tokens to match your brand.
+   APP DESIGN SYSTEM — Portwatch
+   Professional light theme with deep navy accent.
    ================================================ */
 
 @theme {
-  --font-display: ui-sans-serif, system-ui, sans-serif;
-  --font-body: ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --color-app-bg: #0a0a0f;
-  --color-app-surface: #141419;
-  --color-app-surface-hover: #1a1a22;
-  --color-app-surface-raised: #1e1e28;
-  --color-app-border: rgba(99, 149, 255, 0.12);
-  --color-app-border-subtle: rgba(255, 255, 255, 0.06);
-  --color-app-accent: #3b82f6;
-  --color-app-accent-light: #60a5fa;
-  --color-app-accent-dim: #1d4ed8;
-  --color-app-text: #e4e4e7;
-  --color-app-text-muted: #71717a;
-  --color-app-text-dim: #52525b;
-  --color-app-red: #ef4444;
-  --color-app-green: #22c55e;
-  --color-app-yellow: #f59e0b;
-  --color-app-orange: #f97316;
+  --color-app-bg: #f8f9fb;
+  --color-app-surface: #ffffff;
+  --color-app-surface-hover: #f1f3f5;
+  --color-app-surface-raised: #ffffff;
+  --color-app-border: #e2e5ea;
+  --color-app-border-subtle: #eef0f3;
+  --color-app-accent: #1e3a5f;
+  --color-app-accent-light: #2d5a8e;
+  --color-app-accent-dim: #0f2440;
+  --color-app-text: #1a1d23;
+  --color-app-text-muted: #6b7280;
+  --color-app-text-dim: #9ca3af;
+  --color-app-red: #dc2626;
+  --color-app-green: #16a34a;
+  --color-app-yellow: #d97706;
+  --color-app-orange: #ea580c;
 }
 
 *,
@@ -39,7 +38,7 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #050508;
+  background-color: #f0f2f5;
   color: var(--color-app-text);
 }
 
@@ -51,29 +50,30 @@ body {
   flex-direction: column;
   background-color: var(--color-app-bg);
   box-shadow:
-    0 0 40px rgba(59, 130, 246, 0.04),
-    0 0 1px rgba(255, 255, 255, 0.06);
+    0 0 40px rgba(0, 0, 0, 0.04),
+    0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 /* ------------------------------------------------ Backgrounds */
 .app-bg {
   background-color: var(--color-app-bg);
-  background-image:
-    radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.04) 0%, transparent 60%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
 }
 
-/* ------------------------------------------------ Glass panels */
-.glass-panel {
-  background: rgba(20, 20, 25, 0.96);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  border-left: 1px solid rgba(59, 130, 246, 0.08);
+/* ------------------------------------------------ Card panels */
+.card-panel {
+  background: var(--color-app-surface);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-app-border-subtle);
 }
 
-.glass-panel-bottom {
-  background: rgba(20, 20, 25, 0.97);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  border-top: 1px solid rgba(59, 130, 246, 0.12);
+.card-panel-bottom {
+  background: var(--color-app-surface);
+  box-shadow:
+    0 -1px 3px rgba(0, 0, 0, 0.06),
+    0 -1px 2px rgba(0, 0, 0, 0.04);
+  border-top: 1px solid var(--color-app-border);
   border-radius: 16px 16px 0 0;
 }
 
@@ -87,13 +87,11 @@ body {
 }
 
 /* ------------------------------------------------ Header */
-.header-glass {
-  background:
-    linear-gradient(180deg, rgba(59, 130, 246, 0.03) 0%, transparent 2px, transparent 100%),
-    linear-gradient(180deg, rgba(20, 20, 25, 0.97) 0%, rgba(20, 20, 25, 0.9) 100%);
+.header-panel {
+  background: var(--color-app-surface);
   box-shadow:
-    0 1px 0 rgba(59, 130, 246, 0.08),
-    0 4px 24px rgba(0, 0, 0, 0.5);
+    0 1px 0 var(--color-app-border),
+    0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* ------------------------------------------------ Navigation */
@@ -122,7 +120,7 @@ body {
 }
 
 .nav-link-icon-active {
-  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.45));
+  filter: drop-shadow(0 0 4px rgba(30, 58, 95, 0.45));
 }
 
 /* ------------------------------------------------ Scrollbars */
@@ -143,17 +141,17 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(30, 58, 95, 0.15);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(30, 58, 95, 0.3);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(59, 130, 246, 0.15) transparent;
+  scrollbar-color: rgba(30, 58, 95, 0.15) transparent;
 }
 
 /* ------------------------------------------------ Animations */
@@ -215,8 +213,8 @@ body {
   inset: 0;
   border-radius: inherit;
   box-shadow:
-    0 0 20px rgba(59, 130, 246, 0.5),
-    0 0 50px rgba(59, 130, 246, 0.2);
+    0 0 20px rgba(30, 58, 95, 0.3),
+    0 0 50px rgba(30, 58, 95, 0.1);
   animation: pulse-accent 2s ease-in-out infinite;
   pointer-events: none;
   will-change: opacity;

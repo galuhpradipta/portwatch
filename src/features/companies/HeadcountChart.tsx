@@ -17,7 +17,7 @@ function formatYAxis(value: number): string {
 export default function HeadcountChart({ snapshots }: { snapshots: HeadcountSnapshot[] }) {
   if (snapshots.length === 0) {
     return (
-      <div className="h-48 flex items-center justify-center text-white/30 text-sm">
+      <div className="h-48 flex items-center justify-center text-app-text-dim text-sm">
         No headcount data available
       </div>
     );
@@ -31,27 +31,27 @@ export default function HeadcountChart({ snapshots }: { snapshots: HeadcountSnap
   return (
     <ResponsiveContainer width="100%" height={240}>
       <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
         <XAxis
           dataKey="month"
-          tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
+          tick={{ fill: "#6b7280", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
           tickFormatter={formatYAxis}
-          tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
+          tick={{ fill: "#6b7280", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           width={40}
         />
         <Tooltip
           contentStyle={{
-            background: "#1a1a24",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#ffffff",
+            border: "1px solid #e2e5ea",
             borderRadius: "8px",
-            color: "#fff",
+            color: "#1a1d23",
             fontSize: 12,
           }}
           formatter={(value) => [(value as number).toLocaleString(), "Headcount"]}
@@ -59,7 +59,7 @@ export default function HeadcountChart({ snapshots }: { snapshots: HeadcountSnap
         <Line
           type="monotone"
           dataKey="headcount"
-          stroke="#3b82f6"
+          stroke="#1e3a5f"
           strokeWidth={2}
           dot={false}
           activeDot={{ r: 4, strokeWidth: 0 }}

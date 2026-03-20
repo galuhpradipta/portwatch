@@ -61,8 +61,8 @@ export default function DashboardPage() {
       {/* Header row */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Portfolio</h1>
-          <p className="text-sm text-white/50 mt-0.5">{portfolio.length} / 10 companies</p>
+          <h1 className="text-xl font-semibold text-app-text">Portfolio</h1>
+          <p className="text-sm text-app-text-muted mt-0.5">{portfolio.length} / 10 companies</p>
         </div>
         <button
           onClick={handleRefresh}
@@ -75,9 +75,9 @@ export default function DashboardPage() {
       </div>
 
       {portfolio.length === 0 ? (
-        <div className="glass-panel rounded-xl p-12 text-center">
-          <Buildings size={48} className="text-white/20 mx-auto mb-4" />
-          <p className="text-white/60 mb-4">Your portfolio is empty</p>
+        <div className="card-panel rounded-xl p-12 text-center">
+          <Buildings size={48} className="text-app-text-dim mx-auto mb-4" />
+          <p className="text-app-text-muted mb-4">Your portfolio is empty</p>
           <button
             onClick={() => navigate("/companies")}
             className="px-4 py-2 rounded-lg bg-[var(--color-app-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
@@ -86,10 +86,10 @@ export default function DashboardPage() {
           </button>
         </div>
       ) : (
-        <div className="glass-panel rounded-xl overflow-hidden">
+        <div className="card-panel rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-white/50">
+              <tr className="border-b border-app-border text-app-text-muted">
                 {(
                   [
                     { key: "name" as SortKey, label: "Company" },
@@ -100,7 +100,7 @@ export default function DashboardPage() {
                 ).map(({ key, label }) => (
                   <th
                     key={key}
-                    className="px-4 py-3 text-left font-medium cursor-pointer hover:text-white/80 select-none"
+                    className="px-4 py-3 text-left font-medium cursor-pointer hover:text-app-text select-none"
                     onClick={() => handleSort(key)}
                   >
                     <span className="flex items-center gap-1">
@@ -118,22 +118,22 @@ export default function DashboardPage() {
               {sorted.map((company) => {
                 const changeColor =
                   company.headcountChangePercent === null
-                    ? "text-white/50"
+                    ? "text-app-text-dim"
                     : company.headcountChangePercent < 0
-                    ? "text-red-400"
-                    : "text-green-400";
+                    ? "text-app-red"
+                    : "text-app-green";
 
                 return (
                   <tr
                     key={company.id}
-                    className="border-b border-white/5 last:border-0 hover:bg-white/5 cursor-pointer transition-colors"
+                    className="border-b border-app-border-subtle last:border-0 hover:bg-app-surface-hover cursor-pointer transition-colors"
                     onClick={() => navigate(`/companies/${company.id}`)}
                   >
                     <td className="px-4 py-3">
-                      <div className="font-medium text-white">{company.name}</div>
-                      <div className="text-xs text-white/40 mt-0.5">{company.industry}</div>
+                      <div className="font-medium text-app-text">{company.name}</div>
+                      <div className="text-xs text-app-text-dim mt-0.5">{company.industry}</div>
                     </td>
-                    <td className="px-4 py-3 text-white/80">
+                    <td className="px-4 py-3 text-app-text">
                       {formatNumber(company.latestHeadcount)}
                     </td>
                     <td className={`px-4 py-3 font-medium ${changeColor}`}>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
 }
 
 function SentimentDot({ score }: { score: number | null }) {
-  if (score === null) return <span className="text-white/30">—</span>;
+  if (score === null) return <span className="text-app-text-dim">—</span>;
   const color =
     score <= 30
       ? "bg-green-500"
@@ -172,7 +172,7 @@ function SentimentDot({ score }: { score: number | null }) {
   return (
     <span className="flex items-center gap-1.5">
       <span className={`inline-block w-2 h-2 rounded-full ${color}`} />
-      <span className="text-white/60">{score.toFixed(0)}</span>
+      <span className="text-app-text-muted">{score.toFixed(0)}</span>
     </span>
   );
 }
@@ -184,17 +184,17 @@ function AlertBadges({
   hasHeadcountAlert: boolean;
   hasSentimentAlert: boolean;
 }) {
-  if (!hasHeadcountAlert && !hasSentimentAlert) return <span className="text-white/20">—</span>;
+  if (!hasHeadcountAlert && !hasSentimentAlert) return <span className="text-app-text-dim">—</span>;
   return (
     <div className="flex gap-1">
       {hasHeadcountAlert && (
-        <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-medium flex items-center gap-1">
+        <span className="px-2 py-0.5 rounded-full bg-red-50 text-app-red text-xs font-medium flex items-center gap-1">
           <Warning size={10} />
           Headcount
         </span>
       )}
       {hasSentimentAlert && (
-        <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-xs font-medium flex items-center gap-1">
+        <span className="px-2 py-0.5 rounded-full bg-orange-50 text-app-orange text-xs font-medium flex items-center gap-1">
           <Warning size={10} />
           Sentiment
         </span>

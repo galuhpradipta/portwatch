@@ -46,19 +46,19 @@ export default function CompanyDetailPage() {
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-white/50 hover:text-white/80 mb-6 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-app-text-muted hover:text-app-text mb-6 transition-colors"
       >
         <ArrowLeft size={16} />
         Back
       </button>
 
       {/* Company header */}
-      <div className="glass-panel rounded-xl p-6 mb-6">
+      <div className="card-panel rounded-xl p-6 mb-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-white">{company.name}</h1>
+            <h1 className="text-2xl font-semibold text-app-text">{company.name}</h1>
             <p className="text-[var(--color-app-accent)] text-sm mt-1">{company.industry}</p>
-            <div className="flex items-center gap-4 mt-3 text-sm text-white/50">
+            <div className="flex items-center gap-4 mt-3 text-sm text-app-text-muted">
               {company.country && (
                 <span className="flex items-center gap-1">
                   <MapPin size={14} />
@@ -70,7 +70,7 @@ export default function CompanyDetailPage() {
                   href={company.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-white/80 transition-colors"
+                  className="flex items-center gap-1 hover:text-app-text transition-colors"
                 >
                   <Globe size={14} />
                   Website
@@ -86,7 +86,7 @@ export default function CompanyDetailPage() {
             disabled={loading}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
               inPortfolio
-                ? "bg-white/10 text-white/70 hover:bg-white/15"
+                ? "bg-gray-100 text-app-text-muted hover:bg-gray-200"
                 : "bg-[var(--color-app-accent)] text-white hover:opacity-90"
             }`}
           >
@@ -105,16 +105,16 @@ export default function CompanyDetailPage() {
 
       <div className="grid grid-cols-3 gap-6">
         {/* Chart — takes 2 columns */}
-        <div className="col-span-2 glass-panel rounded-xl p-6">
-          <h2 className="text-sm font-medium text-white/70 mb-4">Headcount History</h2>
+        <div className="col-span-2 card-panel rounded-xl p-6">
+          <h2 className="text-sm font-medium text-app-text-muted mb-4">Headcount History</h2>
           <HeadcountChart snapshots={company.snapshots} />
         </div>
 
         {/* Latest headcount stat */}
-        <div className="glass-panel rounded-xl p-6 flex flex-col gap-4">
+        <div className="card-panel rounded-xl p-6 flex flex-col gap-4">
           <div>
-            <p className="text-xs text-white/50 mb-1">Latest Headcount</p>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-xs text-app-text-muted mb-1">Latest Headcount</p>
+            <p className="text-3xl font-bold text-app-text">
               {company.snapshots.length > 0
                 ? company.snapshots[company.snapshots.length - 1].headcount.toLocaleString()
                 : "—"}
@@ -124,10 +124,10 @@ export default function CompanyDetailPage() {
             const latest = company.snapshots[company.snapshots.length - 1].headcount;
             const prev = company.snapshots[company.snapshots.length - 2].headcount;
             const pct = ((latest - prev) / prev) * 100;
-            const color = pct < 0 ? "text-red-400" : "text-green-400";
+            const color = pct < 0 ? "text-app-red" : "text-app-green";
             return (
               <div>
-                <p className="text-xs text-white/50 mb-1">vs Previous Month</p>
+                <p className="text-xs text-app-text-muted mb-1">vs Previous Month</p>
                 <p className={`text-lg font-semibold ${color}`}>
                   {pct >= 0 ? "+" : ""}{pct.toFixed(1)}%
                 </p>
@@ -135,34 +135,34 @@ export default function CompanyDetailPage() {
             );
           })()}
           <div>
-            <p className="text-xs text-white/50 mb-1">Snapshots</p>
-            <p className="text-lg font-semibold text-white/70">{company.snapshots.length} months</p>
+            <p className="text-xs text-app-text-muted mb-1">Snapshots</p>
+            <p className="text-lg font-semibold text-app-text-muted">{company.snapshots.length} months</p>
           </div>
         </div>
       </div>
 
       {/* News feed */}
-      <div className="glass-panel rounded-xl p-6 mt-6">
-        <h2 className="text-sm font-medium text-white/70 mb-4">News & Sentiment</h2>
+      <div className="card-panel rounded-xl p-6 mt-6">
+        <h2 className="text-sm font-medium text-app-text-muted mb-4">News & Sentiment</h2>
         {company.news.length === 0 ? (
-          <p className="text-white/30 text-sm">No news available.</p>
+          <p className="text-app-text-dim text-sm">No news available.</p>
         ) : (
           <div className="space-y-3">
             {company.news.map((article) => (
               <div
                 key={article.id}
-                className="flex items-start justify-between gap-4 py-3 border-b border-white/5 last:border-0"
+                className="flex items-start justify-between gap-4 py-3 border-b border-app-border-subtle last:border-0"
               >
                 <div className="flex-1 min-w-0">
                   <a
                     href={article.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-white/80 hover:text-white line-clamp-2 transition-colors"
+                    className="text-sm text-app-text hover:text-app-accent line-clamp-2 transition-colors"
                   >
                     {article.title}
                   </a>
-                  <div className="flex items-center gap-2 mt-1.5 text-xs text-white/40">
+                  <div className="flex items-center gap-2 mt-1.5 text-xs text-app-text-dim">
                     <span>{article.sourceName}</span>
                     <span>·</span>
                     <span>{new Date(article.publishedAt).toLocaleDateString()}</span>

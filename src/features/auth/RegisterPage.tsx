@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import { Cube } from "@phosphor-icons/react";
+import { Field } from "@base-ui/react/field";
 import { useAuthStore } from "../../shared/store/authStore.ts";
 import { usePageTitle } from "../../shared/hooks/usePageTitle.ts";
 import { APP_NAME } from "../../shared/config.ts";
@@ -59,11 +60,11 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-app-text-muted uppercase tracking-wide">
+          <Field.Root className="flex flex-col gap-1.5">
+            <Field.Label className="text-xs font-medium text-app-text-muted uppercase tracking-wide">
               Display name
-            </span>
-            <input
+            </Field.Label>
+            <Field.Control
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
@@ -71,13 +72,13 @@ export default function RegisterPage() {
               className="w-full px-4 py-3 rounded-xl bg-app-surface border border-app-border-subtle text-app-text placeholder:text-app-text-dim focus:outline-none focus:border-app-accent/50 transition-colors"
               placeholder="Your name"
             />
-          </label>
+          </Field.Root>
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-app-text-muted uppercase tracking-wide">
+          <Field.Root className="flex flex-col gap-1.5">
+            <Field.Label className="text-xs font-medium text-app-text-muted uppercase tracking-wide">
               Email
-            </span>
-            <input
+            </Field.Label>
+            <Field.Control
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -85,13 +86,13 @@ export default function RegisterPage() {
               className="w-full px-4 py-3 rounded-xl bg-app-surface border border-app-border-subtle text-app-text placeholder:text-app-text-dim focus:outline-none focus:border-app-accent/50 transition-colors"
               placeholder="you@example.com"
             />
-          </label>
+          </Field.Root>
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-app-text-muted uppercase tracking-wide">
+          <Field.Root className="flex flex-col gap-1.5">
+            <Field.Label className="text-xs font-medium text-app-text-muted uppercase tracking-wide">
               Password
-            </span>
-            <input
+            </Field.Label>
+            <Field.Control
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -100,7 +101,7 @@ export default function RegisterPage() {
               className="w-full px-4 py-3 rounded-xl bg-app-surface border border-app-border-subtle text-app-text placeholder:text-app-text-dim focus:outline-none focus:border-app-accent/50 transition-colors"
               placeholder="At least 8 characters"
             />
-          </label>
+          </Field.Root>
 
           {error && (
             <p role="alert" className="text-app-red text-sm text-center">{error}</p>

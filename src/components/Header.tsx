@@ -1,6 +1,7 @@
 import { NavLink } from "react-router";
 import { Binoculars, SignOut } from "@phosphor-icons/react";
 import { useState } from "react";
+import { Tooltip } from "@base-ui/react/tooltip";
 import { APP_NAME } from "../shared/config.ts";
 import { useAuth } from "../shared/hooks/useAuth.ts";
 import ConfirmDialog from "./ConfirmDialog.tsx";
@@ -10,12 +11,12 @@ export default function Header() {
   const [showSignOut, setShowSignOut] = useState(false);
 
   return (
-    <header className="header-glass sticky top-0 z-40 border-b border-white/10">
+    <header className="header-panel sticky top-0 z-40 border-b border-app-border">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-8">
         {/* Logo */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <Binoculars size={22} weight="fill" className="text-[var(--color-app-accent)]" />
-          <span className="font-semibold text-sm text-white">{APP_NAME}</span>
+          <span className="font-semibold text-sm text-app-text">{APP_NAME}</span>
         </div>
 
         {/* Nav */}
@@ -32,8 +33,8 @@ export default function Header() {
               className={({ isActive }) =>
                 `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/60 hover:text-white/90 hover:bg-white/5"
+                    ? "bg-app-accent/10 text-app-accent"
+                    : "text-app-text-muted hover:text-app-text hover:bg-app-surface-hover"
                 }`
               }
             >
@@ -44,14 +45,24 @@ export default function Header() {
 
         {/* User */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-white/60">{user?.displayName}</span>
-          <button
-            onClick={() => setShowSignOut(true)}
-            className="p-1.5 rounded-md text-white/50 hover:text-white/90 hover:bg-white/5 transition-colors"
-            title="Sign out"
-          >
-            <SignOut size={18} />
-          </button>
+          <span className="text-sm text-app-text-muted">{user?.displayName}</span>
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <Tooltip.Trigger
+                onClick={() => setShowSignOut(true)}
+                className="p-1.5 rounded-md text-app-text-muted hover:text-app-text hover:bg-app-surface-hover transition-colors"
+              >
+                <SignOut size={18} />
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Positioner side="bottom" sideOffset={4}>
+                  <Tooltip.Popup className="px-2 py-1 rounded-md bg-app-text text-white text-xs shadow-md">
+                    Sign out
+                  </Tooltip.Popup>
+                </Tooltip.Positioner>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          </Tooltip.Provider>
         </div>
       </div>
 

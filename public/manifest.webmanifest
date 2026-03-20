@@ -1,12 +1,12 @@
 {
-  "name": "App",
-  "short_name": "App",
-  "description": "A full-stack app built with Vite + React + Hono + Cloudflare.",
+  "name": "Portwatch",
+  "short_name": "Portwatch",
+  "description": "Portfolio monitoring for financial professionals — track headcount and news sentiment.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0f",
-  "theme_color": "#0a0a0f",
-  "categories": ["utilities"],
+  "background_color": "#f8f9fb",
+  "theme_color": "#ffffff",
+  "categories": ["finance", "utilities"],
   "icons": [
     {
       "src": "/icon-192.png",
