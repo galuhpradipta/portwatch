@@ -1,1 +1,2 @@
 JWT_SECRET=change-me-to-a-random-string
+OPENAI_API_KEY=

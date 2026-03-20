@@ -22,6 +22,6 @@ export const useAuthStore = create<AuthStore>()(
       setAuth: (user, token) => set({ user, token }),
       clearAuth: () => set({ user: null, token: null }),
     }),
-    { name: "vcs-auth" },
+    { name: "pw-auth" },
   ),
 );

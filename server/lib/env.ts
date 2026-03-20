@@ -7,4 +7,6 @@ export type Env = {
   ASSETS: R2Bucket;
   // JWT signing secret — set in .dev.vars (local) or Cloudflare Pages secrets (prod)
   JWT_SECRET: string;
+  // OpenAI API key — for sentiment analysis (built but not active in MVP)
+  OPENAI_API_KEY: string;
 };
