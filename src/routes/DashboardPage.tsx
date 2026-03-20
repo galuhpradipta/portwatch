@@ -13,6 +13,9 @@ import { useApi } from "../shared/hooks/useApi.ts";
 import { PORTFOLIO_LIMIT } from "../shared/config.ts";
 import type { PortfolioCompany } from "../shared/types.ts";
 import CompanyLogo from "../components/CompanyLogo.tsx";
+import PageSectionShell from "../components/PageSectionShell.tsx";
+import MetricCard from "../components/MetricCard.tsx";
+import DataTableShell from "../components/DataTableShell.tsx";
 
 type SortKey = "name" | "headcount" | "change" | "sentiment";
 type SortDir = "asc" | "desc";
@@ -122,7 +125,7 @@ export default function DashboardPage() {
         <button
           onClick={handleRefresh}
           disabled={refreshing || portfolio.length === 0}
-          className="dashboard-action flex items-center gap-2 rounded-full px-4 py-2 text-sm"
+          className="dashboard-action surface-square flex items-center gap-2 px-4 py-2 text-sm"
         >
           <ArrowsClockwise size={16} className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Refreshing..." : "Refresh All"}
@@ -130,8 +133,8 @@ export default function DashboardPage() {
       </div>
 
       {portfolio.length === 0 ? (
-        <div className="dashboard-shell dashboard-panel dashboard-empty-state rounded-[1.75rem] p-10 md:p-12">
-          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[1.5rem] dashboard-empty-icon">
+        <PageSectionShell className="dashboard-empty-state p-10 md:p-12">
+          <div className="dashboard-empty-icon surface-square mx-auto mb-5 flex h-20 w-20 items-center justify-center">
             <Buildings size={36} />
           </div>
           <p className="dashboard-kicker">Portfolio status</p>
@@ -141,11 +144,11 @@ export default function DashboardPage() {
           </p>
           <button
             onClick={() => navigate("/companies")}
-            className="dashboard-action mt-6 rounded-full px-4 py-2 text-sm"
+            className="dashboard-action surface-square mt-6 px-4 py-2 text-sm"
           >
             Browse Companies
           </button>
-        </div>
+        </PageSectionShell>
       ) : (
         <>
           {/* Zone 1: Summary Stats */}
@@ -159,23 +162,22 @@ export default function DashboardPage() {
           />
 
           {/* Zone 2: Enhanced Portfolio Table */}
-          <div className="dashboard-table-shell overflow-hidden">
-            <div className="dashboard-table-topbar flex items-center justify-between gap-4 px-5 py-4">
-              <div>
-                <p className="dashboard-kicker">Portfolio table</p>
-                <p className="dashboard-copy mt-1 text-sm">
-                  {sorted.length} rows, sorted by{" "}
-                  {sortKey === "name"
-                    ? "company"
-                    : sortKey === "headcount"
-                    ? "headcount"
-                    : sortKey === "change"
-                    ? "change"
-                    : "sentiment"}
-                </p>
-              </div>
-              <p className="dashboard-data-muted hidden text-xs md:block">Click a header to sort</p>
-            </div>
+          <DataTableShell
+            kicker="Portfolio table"
+            description={
+              <>
+                {sorted.length} rows, sorted by{" "}
+                {sortKey === "name"
+                  ? "company"
+                  : sortKey === "headcount"
+                  ? "headcount"
+                  : sortKey === "change"
+                  ? "change"
+                  : "sentiment"}
+              </>
+            }
+            helper={<span className="hidden md:inline">Click a header to sort</span>}
+          >
             <div className="overflow-x-auto">
               <table className="dashboard-table w-full min-w-[760px] table-fixed text-sm">
                 <colgroup>
@@ -258,7 +260,7 @@ export default function DashboardPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </DataTableShell>
         </>
       )}
     </div>
@@ -288,7 +290,7 @@ function SummaryStats({
 
   return (
     <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-4">
-      <div className="dashboard-metric dashboard-metric-primary dashboard-metric-compact animate-fade-in-up animate-stagger-1">
+      <MetricCard primary className="animate-fade-in-up animate-stagger-1">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="dashboard-kicker">Live risk</p>
@@ -322,19 +324,19 @@ function SummaryStats({
         </div>
 
         <div className="mt-4 flex flex-wrap gap-1.5">
-          <span className={headcountAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-negative" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"}>
+          <span className={headcountAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-negative surface-square" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square"}>
             {headcountAlertCount} headcount
           </span>
-          <span className={sentimentAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-caution" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"}>
+          <span className={sentimentAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-caution surface-square" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square"}>
             {sentimentAlertCount} sentiment
           </span>
-          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral">
+          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square">
             {alertsActive ? "Monitoring" : "Idle"}
           </span>
         </div>
-      </div>
+      </MetricCard>
 
-      <div className="dashboard-metric dashboard-metric-compact animate-fade-in-up animate-stagger-2">
+      <MetricCard className="animate-fade-in-up animate-stagger-2">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="dashboard-kicker">Portfolio</p>
@@ -348,15 +350,15 @@ function SummaryStats({
             <div className="dashboard-data text-3xl font-semibold">{count}</div>
             <div className="dashboard-copy mt-1 text-xs">of {PORTFOLIO_LIMIT} slots</div>
           </div>
-          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral">
+          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square">
             {utilization}% full
           </span>
         </div>
 
         <div className="mt-3 space-y-1.5">
-          <div className="h-2 overflow-hidden rounded-full bg-app-border">
+          <div className="dashboard-progress-track h-2 overflow-hidden bg-app-border">
             <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-app-accent-dim),var(--color-app-accent))]"
+              className="dashboard-progress-fill h-full bg-[linear-gradient(90deg,var(--color-app-accent-dim),var(--color-app-accent))]"
               style={{ width: `${utilization}%` }}
             />
           </div>
@@ -365,9 +367,9 @@ function SummaryStats({
             <span className="dashboard-data-muted">{utilization}%</span>
           </div>
         </div>
-      </div>
+      </MetricCard>
 
-      <div className="dashboard-metric dashboard-metric-compact animate-fade-in-up animate-stagger-3">
+      <MetricCard className="animate-fade-in-up animate-stagger-3">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="dashboard-kicker">Total headcount</p>
@@ -386,9 +388,9 @@ function SummaryStats({
             {avgPerCompany !== null ? avgPerCompany.toLocaleString() : "No data"}
           </span>
         </div>
-      </div>
+      </MetricCard>
 
-      <div className="dashboard-metric dashboard-metric-compact animate-fade-in-up animate-stagger-4">
+      <MetricCard className="animate-fade-in-up animate-stagger-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="dashboard-kicker">Avg sentiment</p>
@@ -407,12 +409,12 @@ function SummaryStats({
           <span
             className={
               avgSentiment === null
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square"
                 : avgSentiment <= 40
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-positive"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-positive surface-square"
                 : avgSentiment <= 70
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-warning"
-                : "dashboard-chip dashboard-chip-compact dashboard-chip-negative"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-warning surface-square"
+                : "dashboard-chip dashboard-chip-compact dashboard-chip-negative surface-square"
             }
           >
             {sentimentState.label}
@@ -421,9 +423,9 @@ function SummaryStats({
 
         <div className="mt-3 space-y-1.5">
           {avgSentiment !== null && (
-            <div className="h-2 overflow-hidden rounded-full bg-app-border">
+            <div className="dashboard-progress-track h-2 overflow-hidden bg-app-border">
               <div
-                className={`h-full rounded-full transition-all ${sentimentState.fill}`}
+                className={`dashboard-progress-fill h-full transition-all ${sentimentState.fill}`}
                 style={{ width: `${avgSentiment}%` }}
               />
             </div>
@@ -435,7 +437,7 @@ function SummaryStats({
             </span>
           </div>
         </div>
-      </div>
+      </MetricCard>
     </div>
   );
 }
@@ -447,8 +449,8 @@ function ChangePill({ pct }: { pct: number | null }) {
     <span
       className={
         isPositive
-          ? "dashboard-chip dashboard-chip-positive ml-auto"
-          : "dashboard-chip dashboard-chip-negative ml-auto"
+          ? "dashboard-chip dashboard-chip-positive surface-square ml-auto"
+          : "dashboard-chip dashboard-chip-negative surface-square ml-auto"
       }
     >
       {isPositive ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
@@ -463,8 +465,8 @@ function SentimentBar({ score }: { score: number | null }) {
   const sentimentState = getSentimentState(score);
   return (
     <span className="ml-auto flex items-center justify-end gap-2">
-      <span className="h-2 w-16 flex-shrink-0 overflow-hidden rounded-full bg-app-border">
-        <span className={`block h-full rounded-full ${sentimentState.bar}`} style={{ width: `${score}%` }} />
+      <span className="dashboard-progress-track h-2 w-16 flex-shrink-0 overflow-hidden bg-app-border">
+        <span className={`dashboard-progress-fill block h-full ${sentimentState.bar}`} style={{ width: `${score}%` }} />
       </span>
       <span className={`text-xs font-medium tabular-nums ${sentimentState.tone}`}>
         {score.toFixed(0)}
@@ -482,20 +484,20 @@ function AlertBadges({
 }) {
   if (!hasHeadcountAlert && !hasSentimentAlert)
     return (
-      <span className="dashboard-chip dashboard-chip-neutral ml-auto">
+      <span className="dashboard-chip dashboard-chip-neutral surface-square ml-auto">
         Clear
       </span>
     );
   return (
     <div className="ml-auto flex flex-wrap justify-end gap-1">
       {hasHeadcountAlert && (
-        <span className="dashboard-chip dashboard-chip-negative">
+        <span className="dashboard-chip dashboard-chip-negative surface-square">
           <ArrowDown size={9} />
           HC
         </span>
       )}
       {hasSentimentAlert && (
-        <span className="dashboard-chip dashboard-chip-caution">
+        <span className="dashboard-chip dashboard-chip-caution surface-square">
           <Pulse size={9} />
           NEG
         </span>

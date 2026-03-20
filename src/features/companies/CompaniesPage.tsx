@@ -14,6 +14,8 @@ import { PORTFOLIO_LIMIT } from "../../shared/config.ts";
 import { useToastStore } from "../../shared/store/toastStore.ts";
 import type { Company, PortfolioCompany } from "../../shared/types.ts";
 import CompanyLogo from "../../components/CompanyLogo.tsx";
+import MetricCard from "../../components/MetricCard.tsx";
+import DataTableShell from "../../components/DataTableShell.tsx";
 
 type LoaderData = {
   companies: Array<Company & { latestHeadcount: number | null }>;
@@ -146,7 +148,7 @@ export default function CompaniesPage() {
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-        <div className="dashboard-metric dashboard-metric-compact companies-summary-card companies-summary-primary companies-no-radius">
+        <MetricCard className="companies-summary-card companies-summary-primary">
           <div className="dashboard-metric-meta">
             <span className="dashboard-kicker">Portfolio</span>
             <span className="dashboard-data-muted text-xs">{portfolioShare}% tracked</span>
@@ -155,39 +157,33 @@ export default function CompaniesPage() {
             {portfolioCount} / {PORTFOLIO_LIMIT}
           </div>
           <p className="dashboard-copy mt-2 text-sm">Current companies in the active watchlist.</p>
-        </div>
+        </MetricCard>
 
-        <div className="dashboard-metric dashboard-metric-compact companies-summary-card companies-no-radius">
+        <MetricCard className="companies-summary-card">
           <div className="dashboard-metric-meta">
             <span className="dashboard-kicker">Visible</span>
             <span className="dashboard-data-muted text-xs">Filtered list</span>
           </div>
           <div className="dashboard-data mt-3 text-2xl">{filtered.length}</div>
           <p className="dashboard-copy mt-2 text-sm">Rows that match the current search and filters.</p>
-        </div>
+        </MetricCard>
 
-        <div className="dashboard-metric dashboard-metric-compact companies-summary-card companies-no-radius">
+        <MetricCard className="companies-summary-card">
           <div className="dashboard-metric-meta">
             <span className="dashboard-kicker">Coverage</span>
             <span className="dashboard-data-muted text-xs">Universe size</span>
           </div>
           <div className="dashboard-data mt-3 text-2xl">{companies.length}</div>
           <p className="dashboard-copy mt-2 text-sm">Total companies available to review and track.</p>
-        </div>
+        </MetricCard>
       </div>
 
-      <div className="dashboard-shell companies-compact-shell companies-no-radius overflow-hidden">
-        <div className="dashboard-table-topbar companies-toolbar-bar px-4 py-4 md:px-5">
-          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="dashboard-kicker">Filter desk</p>
-              <p className="dashboard-copy mt-1 text-sm">
-                Search by company or industry, then refine by sector and country.
-              </p>
-            </div>
-            <p className="dashboard-data-muted text-xs">Use column headers to sort the list.</p>
-          </div>
-
+      <DataTableShell
+        kicker="Filter desk"
+        description="Search by company or industry, then refine by sector and country."
+        helper="Use column headers to sort the list."
+        className="companies-compact-shell"
+        toolbar={
           <div className="companies-filter-grid">
             <label className="relative block">
               <MagnifyingGlass
@@ -199,7 +195,7 @@ export default function CompaniesPage() {
                 placeholder="Search company or industry"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                className="companies-compact-control companies-compact-search companies-no-radius"
+                className="companies-compact-control companies-compact-search surface-square"
               />
             </label>
 
@@ -211,7 +207,7 @@ export default function CompaniesPage() {
               <select
                 value={industryFilter}
                 onChange={(event) => setIndustryFilter(event.target.value)}
-                className="companies-compact-control companies-compact-select companies-no-radius"
+                className="companies-compact-control companies-compact-select surface-square"
               >
                 <option value="">All industries</option>
                 {industries.map((industry) => (
@@ -230,7 +226,7 @@ export default function CompaniesPage() {
               <select
                 value={countryFilter}
                 onChange={(event) => setCountryFilter(event.target.value)}
-                className="companies-compact-control companies-compact-select companies-no-radius"
+                className="companies-compact-control companies-compact-select surface-square"
               >
                 <option value="">All countries</option>
                 {countries.map((country) => (
@@ -241,11 +237,12 @@ export default function CompaniesPage() {
               </select>
             </label>
           </div>
-        </div>
+        }
+      >
 
         {filtered.length === 0 ? (
           <div className="dashboard-panel dashboard-empty-state companies-empty-panel px-6 py-10 md:px-10 md:py-12">
-            <div className="dashboard-empty-icon companies-empty-icon-compact companies-no-radius mx-auto mb-5 flex items-center justify-center">
+            <div className="dashboard-empty-icon companies-empty-icon-compact surface-square mx-auto mb-5 flex items-center justify-center">
               <Buildings size={34} />
             </div>
             <p className="dashboard-kicker">No match</p>
@@ -255,9 +252,8 @@ export default function CompaniesPage() {
             </p>
           </div>
         ) : (
-          <div className="dashboard-table-shell rounded-none border-0 border-t dashboard-divider shadow-none">
-            <div className="overflow-x-auto">
-              <table className="dashboard-table companies-table w-full min-w-[720px] table-fixed text-sm">
+          <div className="overflow-x-auto">
+            <table className="dashboard-table companies-table w-full min-w-[720px] table-fixed text-sm">
                 <colgroup>
                   <col style={{ width: "48%" }} />
                   <col style={{ width: "18%" }} />
@@ -327,7 +323,7 @@ export default function CompaniesPage() {
 
                         <td className="px-4 py-3 text-right align-middle md:px-5">
                           <span
-                            className={`dashboard-chip dashboard-chip-compact companies-no-radius ${
+                            className={`dashboard-chip dashboard-chip-compact surface-square ${
                               inPortfolio
                                 ? "dashboard-chip-positive"
                                 : "dashboard-chip-neutral"
@@ -341,7 +337,7 @@ export default function CompaniesPage() {
                           <button
                             onClick={() => togglePortfolio(company.id)}
                             disabled={isLoading}
-                            className={`companies-inline-action companies-no-radius ${
+                            className={`companies-inline-action surface-square ${
                               inPortfolio
                                 ? "companies-inline-action-secondary"
                                 : "companies-inline-action-primary"
@@ -362,11 +358,10 @@ export default function CompaniesPage() {
                     );
                   })}
                 </tbody>
-              </table>
-            </div>
+            </table>
           </div>
         )}
-      </div>
+      </DataTableShell>
     </div>
   );
 }

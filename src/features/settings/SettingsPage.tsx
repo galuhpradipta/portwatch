@@ -1,9 +1,9 @@
 import { useLoaderData } from "react-router";
 import { useState } from "react";
 import { Field } from "@base-ui/react/field";
-import { Slider } from "@base-ui/react/slider";
 import { useApi } from "../../shared/hooks/useApi.ts";
 import { useAuthStore } from "../../shared/store/authStore.ts";
+import PageSectionShell from "../../components/PageSectionShell.tsx";
 
 type MeData = {
   id: string;
@@ -12,6 +12,10 @@ type MeData = {
   headcountDropThreshold: number;
 };
 
+function clampThreshold(value: number): number {
+  return Math.min(50, Math.max(1, value));
+}
+
 export default function SettingsPage() {
   const me = useLoaderData() as MeData;
   const api = useApi();
@@ -19,18 +23,35 @@ export default function SettingsPage() {
   const token = useAuthStore((s) => s.token);
 
   const [displayName, setDisplayName] = useState(me.displayName);
-  const [threshold, setThreshold] = useState(me.headcountDropThreshold ?? 10);
+  const [thresholdInput, setThresholdInput] = useState(
+    String(clampThreshold(me.headcountDropThreshold ?? 10)),
+  );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  const parsedThreshold = Number.parseInt(thresholdInput, 10);
+  const threshold =
+    Number.isFinite(parsedThreshold) && !Number.isNaN(parsedThreshold)
+      ? clampThreshold(parsedThreshold)
+      : null;
+
   async function handleSave() {
+    const nextThreshold = threshold ?? 10;
+
     setSaving(true);
     setSaved(false);
+
     try {
-      await api.put("/auth/me", { displayName, headcountDropThreshold: threshold });
+      await api.put("/auth/me", {
+        displayName: displayName.trim(),
+        headcountDropThreshold: nextThreshold,
+      });
+
       if (token) {
-        setAuth({ id: me.id, email: me.email, displayName }, token);
+        setAuth({ id: me.id, email: me.email, displayName: displayName.trim() }, token);
       }
+
+      setThresholdInput(String(nextThreshold));
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
@@ -39,75 +60,109 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-lg">
-      <h1 className="text-2xl font-semibold text-app-text mb-6">Settings</h1>
+    <div className="max-w-3xl">
+      <div className="mb-6 space-y-1">
+        <p className="dashboard-kicker">Account control</p>
+        <h1 className="dashboard-title text-2xl">Settings</h1>
+        <p className="dashboard-copy text-sm">
+          Keep identity details current and set the alert threshold with a single, explicit value.
+        </p>
+      </div>
 
-      <div className="card-panel rounded-xl p-6 space-y-6">
-        {/* Display name */}
-        <Field.Root>
-          <Field.Label className="block text-sm font-medium text-app-text-muted mb-2">
-            Display Name
-          </Field.Label>
-          <Field.Control
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            className="w-full bg-app-surface border border-app-border rounded-lg px-4 py-2 text-sm text-app-text placeholder:text-app-text-dim focus:outline-none focus:border-[var(--color-app-accent)]/50"
-          />
-        </Field.Root>
-
-        {/* Email (read-only) */}
-        <Field.Root>
-          <Field.Label className="block text-sm font-medium text-app-text-muted mb-2">
-            Email
-          </Field.Label>
-          <Field.Control
-            type="email"
-            value={me.email}
-            disabled
-            className="w-full bg-app-surface border border-app-border rounded-lg px-4 py-2 text-sm text-app-text-dim cursor-not-allowed"
-          />
-        </Field.Root>
-
-        {/* Headcount drop threshold */}
-        <div>
-          <label className="block text-sm font-medium text-app-text-muted mb-1">
-            Headcount Drop Alert Threshold
-          </label>
-          <p className="text-xs text-app-text-dim mb-3">
-            Alert when headcount drops by more than {threshold}%
-          </p>
-          <Slider.Root
-            value={threshold}
-            onValueChange={(val) => setThreshold(val as number)}
-            min={1}
-            max={50}
-            className="w-full py-2"
-          >
-            <Slider.Control className="flex items-center w-full h-5 relative cursor-pointer">
-              <Slider.Track className="relative h-1.5 w-full rounded-full bg-app-border">
-                <Slider.Indicator className="absolute h-full rounded-full bg-[var(--color-app-accent)]" />
-                <Slider.Thumb
-                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[var(--color-app-accent)] shadow-sm border-2 border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-app-accent)]/40"
-                  getAriaValueText={(formattedValue) => `${formattedValue} percent`}
-                />
-              </Slider.Track>
-            </Slider.Control>
-          </Slider.Root>
-          <div className="flex justify-between text-xs text-app-text-dim mt-1">
-            <span>1%</span>
-            <span className="text-app-text font-medium">{threshold}%</span>
-            <span>50%</span>
+      <div className="grid grid-cols-1 gap-4">
+        <PageSectionShell className="settings-panel p-5 md:p-6">
+          <div className="mb-5">
+            <p className="dashboard-kicker">Account</p>
+            <p className="dashboard-copy mt-1 text-sm">
+              Basic profile details used across the workspace.
+            </p>
           </div>
-        </div>
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full py-2 rounded-lg bg-[var(--color-app-accent)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-        >
-          {saving ? "Saving..." : saved ? "Saved!" : "Save Changes"}
-        </button>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field.Root>
+              <Field.Label className="settings-label">Display Name</Field.Label>
+              <Field.Control
+                type="text"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                className="settings-input surface-square"
+              />
+            </Field.Root>
+
+            <Field.Root>
+              <Field.Label className="settings-label">Email</Field.Label>
+              <Field.Control
+                type="email"
+                value={me.email}
+                disabled
+                className="settings-input settings-input-readonly surface-square"
+              />
+            </Field.Root>
+          </div>
+        </PageSectionShell>
+
+        <PageSectionShell className="settings-panel p-5 md:p-6">
+          <div className="mb-5">
+            <p className="dashboard-kicker">Alert Settings</p>
+            <p className="dashboard-copy mt-1 text-sm">
+              Trigger an alert when headcount drops beyond the threshold below.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <Field.Root>
+              <Field.Label className="settings-label">Headcount Drop Threshold</Field.Label>
+              <div className="settings-input-wrap surface-square">
+                <Field.Control
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={50}
+                  step={1}
+                  value={thresholdInput}
+                  onChange={(event) => {
+                    setSaved(false);
+                    setThresholdInput(event.target.value);
+                  }}
+                  onBlur={() => {
+                    if (threshold !== null) {
+                      setThresholdInput(String(threshold));
+                    }
+                  }}
+                  className="settings-input settings-input-with-suffix surface-square"
+                />
+                <span className="settings-input-suffix">%</span>
+              </div>
+            </Field.Root>
+
+            <div className="settings-threshold-note surface-square">
+              <span className="dashboard-kicker">Allowed range</span>
+              <span className="dashboard-data mt-2 text-lg">
+                {threshold ?? "—"}%
+              </span>
+              <span className="dashboard-copy mt-1 text-xs">Min 1, max 50</span>
+            </div>
+          </div>
+        </PageSectionShell>
+
+        <PageSectionShell className="settings-panel p-5 md:p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="dashboard-kicker">Save</p>
+              <p className="dashboard-copy mt-1 text-sm">
+                Save the current profile and alert threshold in one update.
+              </p>
+            </div>
+
+            <button
+              onClick={handleSave}
+              disabled={saving || threshold === null}
+              className="dashboard-action settings-save-action surface-square px-4 py-2 text-sm"
+            >
+              {saving ? "Saving..." : saved ? "Saved!" : "Save Changes"}
+            </button>
+          </div>
+        </PageSectionShell>
       </div>
     </div>
   );
