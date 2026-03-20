@@ -6,6 +6,9 @@ export default defineConfig({
     "*.{ts,tsx}": "eslint --fix",
   },
   plugins: [react()],
+  resolve: {
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
+  },
   lint: {},
   test: {
     environment: "node",

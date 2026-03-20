@@ -9,7 +9,7 @@ import type { Env } from "../lib/env.ts";
 export const adminRoutes = new Hono<{ Bindings: Env }>()
   .post("/seed", async (c) => {
     const db = drizzle(c.env.DB);
-    const batchSize = 20;
+    const batchSize = 5;
 
     // Insert companies (idempotent)
     for (let i = 0; i < SEED_COMPANIES.length; i += batchSize) {

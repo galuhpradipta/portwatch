@@ -6,14 +6,14 @@
 		{
 			"binding": "DB",
 			"database_name": "portwatch-db",
-			"database_id": "",
+			"database_id": "00000000-0000-0000-0000-000000000000",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
 	"r2_buckets": [
 		{
-			"binding": "ASSETS",
-			"bucket_name": "app-assets"
+			"binding": "STORAGE",
+			"bucket_name": "portwatch-assets"
 		}
 	]
 }
