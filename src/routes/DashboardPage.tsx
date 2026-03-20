@@ -1,6 +1,14 @@
 import { useLoaderData, useNavigate, useRevalidator } from "react-router";
 import { useState } from "react";
-import { ArrowsClockwise, ArrowUp, ArrowDown, Buildings, Warning, Users, Pulse } from "@phosphor-icons/react";
+import {
+  ArrowsClockwise,
+  ArrowUp,
+  ArrowDown,
+  Buildings,
+  Warning,
+  Users,
+  Pulse,
+} from "@phosphor-icons/react";
 import { useApi } from "../shared/hooks/useApi.ts";
 import { PORTFOLIO_LIMIT } from "../shared/config.ts";
 import type { PortfolioCompany } from "../shared/types.ts";
@@ -12,6 +20,42 @@ type SortDir = "asc" | "desc";
 function formatNumber(n: number | null): string {
   if (n === null) return "—";
   return n.toLocaleString();
+}
+
+function getSentimentState(score: number | null) {
+  if (score === null) {
+    return {
+      label: "No reading",
+      tone: "text-app-text-muted",
+      bar: "bg-app-text-dim",
+      fill: "bg-app-border",
+    };
+  }
+
+  if (score <= 40) {
+    return {
+      label: "Calm",
+      tone: "text-app-green",
+      bar: "bg-app-green",
+      fill: "bg-app-green",
+    };
+  }
+
+  if (score <= 70) {
+    return {
+      label: "Mixed",
+      tone: "text-app-yellow",
+      bar: "bg-app-yellow",
+      fill: "bg-app-yellow",
+    };
+  }
+
+  return {
+    label: "Stressed",
+    tone: "text-app-red",
+    bar: "bg-app-red",
+    fill: "bg-app-red",
+  };
 }
 
 export default function DashboardPage() {
@@ -61,21 +105,24 @@ export default function DashboardPage() {
       ? sentimentScores.reduce((a, b) => a + b, 0) / sentimentScores.length
       : null;
   const activeAlerts = portfolio.filter((c) => c.hasHeadcountAlert || c.hasSentimentAlert);
+  const headcountAlertCount = portfolio.filter((c) => c.hasHeadcountAlert).length;
+  const sentimentAlertCount = portfolio.filter((c) => c.hasSentimentAlert).length;
 
   return (
     <div>
       {/* Header row */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-app-text">Portfolio</h1>
-          <p className="text-sm text-app-text-muted mt-0.5">
-            {portfolio.length} / {PORTFOLIO_LIMIT} companies
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-1">
+          <p className="dashboard-kicker">Portfolio control room</p>
+          <h1 className="dashboard-title text-2xl">Portfolio</h1>
+          <p className="dashboard-copy text-sm">
+            {portfolio.length} / {PORTFOLIO_LIMIT} companies tracked
           </p>
         </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing || portfolio.length === 0}
-          className="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+          className="dashboard-action flex items-center gap-2 rounded-full px-4 py-2 text-sm"
         >
           <ArrowsClockwise size={16} className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Refreshing..." : "Refresh All"}
@@ -83,12 +130,18 @@ export default function DashboardPage() {
       </div>
 
       {portfolio.length === 0 ? (
-        <div className="card-panel rounded-xl p-12 text-center">
-          <Buildings size={48} className="text-app-text-dim mx-auto mb-4" />
-          <p className="text-app-text-muted mb-4">Your portfolio is empty</p>
+        <div className="dashboard-shell dashboard-panel dashboard-empty-state rounded-[1.75rem] p-10 md:p-12">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[1.5rem] dashboard-empty-icon">
+            <Buildings size={36} />
+          </div>
+          <p className="dashboard-kicker">Portfolio status</p>
+          <h2 className="dashboard-title mt-3 text-2xl">Your portfolio is empty</h2>
+          <p className="dashboard-copy mx-auto mt-3 max-w-[34ch] text-sm">
+            Add a few tracked companies so the metrics and signal table can start reading as a live portfolio.
+          </p>
           <button
             onClick={() => navigate("/companies")}
-            className="btn-primary px-4 py-2 rounded-lg text-sm"
+            className="dashboard-action mt-6 rounded-full px-4 py-2 text-sm"
           >
             Browse Companies
           </button>
@@ -101,83 +154,110 @@ export default function DashboardPage() {
             totalHeadcount={totalHeadcount}
             avgSentiment={avgSentiment}
             activeAlerts={activeAlerts.length}
+            headcountAlertCount={headcountAlertCount}
+            sentimentAlertCount={sentimentAlertCount}
           />
 
-          {/* Zone 2: Alerts Panel (conditional) */}
-          {activeAlerts.length > 0 && (
-            <AlertsPanel
-              alerts={activeAlerts}
-              onNavigate={(id) => navigate(`/companies/${id}`)}
-            />
-          )}
-
-          {/* Zone 3: Enhanced Portfolio Table */}
-          <div className="card-panel rounded-xl overflow-hidden overflow-x-auto">
-            <table className="w-full text-sm min-w-[560px]">
-              <thead>
-                <tr className="border-b border-app-border">
-                  {(
-                    [
-                      { key: "name" as SortKey, label: "Company" },
-                      { key: "headcount" as SortKey, label: "Headcount" },
-                      { key: "change" as SortKey, label: "Change %" },
-                      { key: "sentiment" as SortKey, label: "Sentiment" },
-                    ] as const
-                  ).map(({ key, label }) => (
-                    <th
-                      key={key}
-                      className="px-5 py-3 text-left text-xs font-semibold text-app-text-muted cursor-pointer hover:text-app-text select-none transition-colors"
-                      onClick={() => handleSort(key)}
+          {/* Zone 2: Enhanced Portfolio Table */}
+          <div className="dashboard-table-shell overflow-hidden">
+            <div className="dashboard-table-topbar flex items-center justify-between gap-4 px-5 py-4">
+              <div>
+                <p className="dashboard-kicker">Portfolio table</p>
+                <p className="dashboard-copy mt-1 text-sm">
+                  {sorted.length} rows, sorted by{" "}
+                  {sortKey === "name"
+                    ? "company"
+                    : sortKey === "headcount"
+                    ? "headcount"
+                    : sortKey === "change"
+                    ? "change"
+                    : "sentiment"}
+                </p>
+              </div>
+              <p className="dashboard-data-muted hidden text-xs md:block">Click a header to sort</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="dashboard-table w-full min-w-[760px] table-fixed text-sm">
+                <colgroup>
+                  <col style={{ width: "40%" }} />
+                  <col style={{ width: "16%" }} />
+                  <col style={{ width: "16%" }} />
+                  <col style={{ width: "18%" }} />
+                  <col style={{ width: "10%" }} />
+                </colgroup>
+                <thead>
+                  <tr className="dashboard-table-head border-b dashboard-divider">
+                    {(
+                      [
+                        { key: "name" as SortKey, label: "Company" },
+                        { key: "headcount" as SortKey, label: "Headcount" },
+                        { key: "change" as SortKey, label: "Change %" },
+                        { key: "sentiment" as SortKey, label: "Sentiment" },
+                      ] as const
+                    ).map(({ key, label }) => (
+                      <th
+                        key={key}
+                        className={`dashboard-kicker px-5 py-3 select-none transition-colors hover:text-app-text ${
+                          key === "name" ? "text-left" : "text-right"
+                        }`}
+                        onClick={() => handleSort(key)}
+                      >
+                        <span
+                          className={`inline-flex items-center gap-1 ${
+                            key === "name" ? "" : "justify-end"
+                          }`}
+                        >
+                          {label}
+                          {sortKey === key &&
+                            (sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
+                        </span>
+                      </th>
+                    ))}
+                    <th className="dashboard-kicker px-5 py-3 text-right">Signals</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((company) => (
+                    <tr
+                      key={company.id}
+                      className="dashboard-table-row group cursor-pointer"
+                      onClick={() => navigate(`/companies/${company.id}`)}
                     >
-                      <span className="flex items-center gap-1">
-                        {label}
-                        {sortKey === key &&
-                          (sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
-                      </span>
-                    </th>
-                  ))}
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-app-text-muted">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((company) => (
-                  <tr
-                    key={company.id}
-                    className="border-b border-app-border-subtle last:border-0 hover:bg-app-surface-hover cursor-pointer transition-colors"
-                    onClick={() => navigate(`/companies/${company.id}`)}
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2.5">
-                        <CompanyLogo name={company.name} website={company.website} size={28} />
-                        <div>
-                          <div className="font-semibold text-app-text">{company.name}</div>
-                          <div className="text-xs font-medium text-app-text-muted mt-0.5">
-                            {company.industry}
+                      <td className="px-5 py-4 align-top">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <CompanyLogo name={company.name} website={company.website} size={32} />
+                          <div className="min-w-0">
+                            <div className="truncate dashboard-title text-base">
+                              {company.name}
+                            </div>
+                            <div className="dashboard-company-meta mt-1">
+                              {company.industry} · {company.country}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 font-bold tabular-nums text-app-text">
-                      {formatNumber(company.latestHeadcount)}
-                    </td>
-                    <td className="px-5 py-4">
-                      <ChangePill pct={company.headcountChangePercent} />
-                    </td>
-                    <td className="px-5 py-4">
-                      <SentimentBar score={company.avgSentimentScore} />
-                    </td>
-                    <td className="px-5 py-4">
-                      <AlertBadges
-                        hasHeadcountAlert={company.hasHeadcountAlert}
-                        hasSentimentAlert={company.hasSentimentAlert}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="px-5 py-4 align-top text-right">
+                        <span className="dashboard-data text-lg font-semibold">
+                          {formatNumber(company.latestHeadcount)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 align-top text-right">
+                        <ChangePill pct={company.headcountChangePercent} />
+                      </td>
+                      <td className="px-5 py-4 align-top text-right">
+                        <SentimentBar score={company.avgSentimentScore} />
+                      </td>
+                      <td className="px-5 py-4 align-top text-right">
+                        <AlertBadges
+                          hasHeadcountAlert={company.hasHeadcountAlert}
+                          hasSentimentAlert={company.hasSentimentAlert}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
@@ -190,46 +270,115 @@ function SummaryStats({
   totalHeadcount,
   avgSentiment,
   activeAlerts,
+  headcountAlertCount,
+  sentimentAlertCount,
 }: {
   count: number;
   totalHeadcount: number;
   avgSentiment: number | null;
   activeAlerts: number;
+  headcountAlertCount: number;
+  sentimentAlertCount: number;
 }) {
-  const sentimentColor =
-    avgSentiment === null
-      ? "text-app-text-muted"
-      : avgSentiment <= 40
-      ? "text-app-green"
-      : avgSentiment <= 70
-      ? "text-app-yellow"
-      : "text-app-red";
-
-  // Progress ring geometry (r=20, circumference ≈ 125.7)
+  const sentimentState = getSentimentState(avgSentiment);
   const circumference = 2 * Math.PI * 20;
   const progress = (count / PORTFOLIO_LIMIT) * circumference;
-
+  const utilization = Math.round((count / PORTFOLIO_LIMIT) * 100);
+  const avgPerCompany = count > 0 ? Math.round(totalHeadcount / count) : null;
   const alertsActive = activeAlerts > 0;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      {/* Portfolio Count — progress ring */}
-      <div className="stat-card card-panel-subtle rounded-xl p-4 animate-fade-in-up animate-stagger-1">
-        <div className="flex items-start justify-between mb-2">
-          <span className="text-xs text-app-text-muted font-medium">Portfolio</span>
+    <div className="mb-6 grid grid-cols-1 gap-4 md:auto-rows-[minmax(9.5rem,auto)] md:grid-cols-12">
+      <div className="dashboard-metric dashboard-metric-primary md:col-span-5 md:row-span-2 animate-fade-in-up animate-stagger-1">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="dashboard-kicker">Live risk</p>
+            <h2 className="dashboard-copy mt-2 text-sm font-medium">Threat level</h2>
+          </div>
+          <Warning
+            size={18}
+            weight={alertsActive ? "fill" : "regular"}
+            className={alertsActive ? "text-app-red" : "text-app-text-dim"}
+          />
+        </div>
+
+        <div className="mt-6 flex items-end gap-4">
+          <div
+            className={`dashboard-data text-5xl font-semibold ${
+              alertsActive ? "text-app-red" : "text-app-text"
+            }`}
+          >
+            {activeAlerts}
+          </div>
+          <div className="pb-1">
+            <div
+              className={`dashboard-kicker ${alertsActive ? "text-app-red/80" : "text-app-text-dim"}`}
+            >
+              {alertsActive ? "Alerts open" : "Clear"}
+            </div>
+            <div className="dashboard-copy mt-1 text-sm">
+              {alertsActive
+                ? "Active monitoring is required"
+                : "No active issues across the portfolio"}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          <span className={headcountAlertCount > 0 ? "dashboard-chip dashboard-chip-negative" : "dashboard-chip dashboard-chip-neutral"}>
+            {headcountAlertCount} headcount
+          </span>
+          <span className={sentimentAlertCount > 0 ? "dashboard-chip dashboard-chip-caution" : "dashboard-chip dashboard-chip-neutral"}>
+            {sentimentAlertCount} sentiment
+          </span>
+          <span className="dashboard-chip dashboard-chip-neutral">
+            {count > 0 ? `${Math.round((activeAlerts / count) * 100)}% of portfolio` : "No portfolio"}
+          </span>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="dashboard-subtle-surface rounded-2xl p-3">
+            <div className="dashboard-kicker">Scan mode</div>
+            <div className={`mt-2 text-sm font-semibold ${alertsActive ? "text-app-text" : "text-app-text-muted"}`}>
+              {alertsActive ? "Monitoring" : "Idle"}
+            </div>
+          </div>
+          <div className="dashboard-subtle-surface rounded-2xl p-3">
+            <div className="dashboard-kicker">Active share</div>
+            <div className="mt-2 text-sm font-semibold text-app-text">
+              {utilization}% of capacity
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="dashboard-metric md:col-span-3 animate-fade-in-up animate-stagger-2">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="dashboard-kicker">Portfolio</p>
+            <h2 className="dashboard-copy mt-2 text-sm font-medium">Tracked companies</h2>
+          </div>
           <Buildings size={16} className="text-app-text-dim" />
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 flex-shrink-0">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 48 48">
+        <div className="mt-6 flex items-end justify-between gap-4">
+          <div>
+            <div className="dashboard-data text-4xl font-semibold">{count}</div>
+            <div className="dashboard-copy mt-1 text-xs">of {PORTFOLIO_LIMIT} slots filled</div>
+          </div>
+          <div className="relative h-16 w-16 flex-shrink-0">
+            <svg className="h-full w-full -rotate-90" viewBox="0 0 48 48">
               <circle
-                cx="24" cy="24" r="20"
+                cx="24"
+                cy="24"
+                r="20"
                 fill="none"
                 stroke="rgba(255,255,255,0.06)"
                 strokeWidth="4"
               />
               <circle
-                cx="24" cy="24" r="20"
+                cx="24"
+                cy="24"
+                r="20"
                 fill="none"
                 stroke="var(--color-app-accent)"
                 strokeWidth="4"
@@ -237,138 +386,110 @@ function SummaryStats({
                 strokeLinecap="round"
               />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-app-text">
+            <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-app-text">
               {count}
             </span>
           </div>
-          <div>
-            <div className="text-xl font-extrabold text-app-text tabular-nums">
-              / {PORTFOLIO_LIMIT}
-            </div>
-            <div className="text-xs text-app-text-muted">companies</div>
+        </div>
+        <div className="mt-5 space-y-2">
+          <div className="h-2 overflow-hidden rounded-full bg-app-border">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-app-accent-dim),var(--color-app-accent))]"
+              style={{ width: `${utilization}%` }}
+            />
+          </div>
+          <div className="dashboard-kicker flex items-center justify-between">
+            <span>Utilization</span>
+            <span>{utilization}%</span>
           </div>
         </div>
       </div>
 
-      {/* Total Headcount */}
-      <div className="stat-card card-panel-subtle rounded-xl p-4 animate-fade-in-up animate-stagger-2">
-        <div className="flex items-start justify-between mb-2">
-          <span className="text-xs text-app-text-muted font-medium">Total Headcount</span>
+      <div className="dashboard-metric md:col-span-4 animate-fade-in-up animate-stagger-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="dashboard-kicker">Total headcount</p>
+            <h2 className="dashboard-copy mt-2 text-sm font-medium">Across all companies</h2>
+          </div>
           <Users size={16} className="text-app-accent/50" />
         </div>
-        <div className="text-2xl font-extrabold text-app-text tabular-nums">
+        <div className="dashboard-data mt-6 text-4xl font-semibold">
           {totalHeadcount > 0 ? totalHeadcount.toLocaleString() : "—"}
         </div>
-        <div className="text-xs text-app-text-muted mt-1">across all companies</div>
+        <div className="dashboard-copy mt-2 text-sm">
+          {avgPerCompany !== null
+            ? `${avgPerCompany.toLocaleString()} average per company`
+            : "No headcount data yet"}
+        </div>
       </div>
 
-      {/* Avg Sentiment */}
-      <div className="stat-card card-panel-subtle rounded-xl p-4 animate-fade-in-up animate-stagger-3">
-        <div className="flex items-start justify-between mb-2">
-          <span className="text-xs text-app-text-muted font-medium">Avg Sentiment</span>
-          <Pulse size={16} className={avgSentiment !== null ? sentimentColor : "text-app-text-dim"} />
+      <div className="dashboard-metric md:col-span-7 animate-fade-in-up animate-stagger-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="dashboard-kicker">Avg sentiment</p>
+            <h2 className="dashboard-copy mt-2 text-sm font-medium">Signal health</h2>
+          </div>
+          <Pulse
+            size={16}
+            className={avgSentiment !== null ? sentimentState.tone : "text-app-text-dim"}
+          />
         </div>
-        <div className={`text-2xl font-extrabold tabular-nums ${sentimentColor}`}>
-          {avgSentiment !== null ? avgSentiment.toFixed(0) : "—"}
+
+        <div className="mt-6 flex flex-wrap items-end gap-4">
+          <div className={`dashboard-data text-4xl font-semibold ${sentimentState.tone}`}>
+            {avgSentiment !== null ? avgSentiment.toFixed(0) : "—"}
+          </div>
+          <span
+            className={
+              avgSentiment === null
+                ? "dashboard-chip dashboard-chip-neutral"
+                : avgSentiment <= 40
+                ? "dashboard-chip dashboard-chip-positive"
+                : avgSentiment <= 70
+                ? "dashboard-chip dashboard-chip-warning"
+                : "dashboard-chip dashboard-chip-negative"
+            }
+          >
+            {sentimentState.label}
+          </span>
         </div>
-        <div className="mt-2">
+
+        <div className="mt-5 space-y-2">
           {avgSentiment !== null && (
-            <div className="w-full h-1.5 rounded-full bg-app-border overflow-hidden">
+            <div className="h-2 overflow-hidden rounded-full bg-app-border">
               <div
-                className={`h-full rounded-full transition-all ${
-                  avgSentiment <= 40 ? "bg-green-500" : avgSentiment <= 70 ? "bg-yellow-500" : "bg-red-500"
-                }`}
+                className={`h-full rounded-full transition-all ${sentimentState.fill}`}
                 style={{ width: `${avgSentiment}%` }}
               />
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Active Alerts — red-tinted when active */}
-      <div
-        className={`stat-card rounded-xl p-4 animate-fade-in-up animate-stagger-4 transition-colors ${
-          alertsActive
-            ? "card-panel-elevated bg-red-500/5 border border-red-500/20"
-            : "card-panel-subtle"
-        }`}
-      >
-        <div className="flex items-start justify-between mb-2">
-          <span className="text-xs text-app-text-muted font-medium">Active Alerts</span>
-          <Warning
-            size={16}
-            weight={alertsActive ? "fill" : "regular"}
-            className={alertsActive ? "text-app-red" : "text-app-text-dim"}
-          />
-        </div>
-        <div
-          className={`text-2xl font-extrabold tabular-nums ${
-            alertsActive ? "text-app-red" : "text-app-text"
-          }`}
-        >
-          {activeAlerts}
-        </div>
-        <div className="text-xs text-app-text-muted mt-1">
-          {alertsActive ? `${activeAlerts} compan${activeAlerts === 1 ? "y needs" : "ies need"} attention` : "All clear"}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AlertsPanel({
-  alerts,
-  onNavigate,
-}: {
-  alerts: PortfolioCompany[];
-  onNavigate: (id: string) => void;
-}) {
-  return (
-    <div className="card-panel-elevated rounded-xl p-5 mb-6">
-      <h2 className="text-sm font-semibold text-app-text-muted mb-3">
-        Active alerts
-      </h2>
-      <div className="space-y-1">
-        {alerts.map((company) => (
-          <div
-            key={company.id}
-            className="alert-row flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-app-surface-raised cursor-pointer transition-colors"
-            onClick={() => onNavigate(company.id)}
-          >
-            <span className="font-semibold text-app-text text-sm">{company.name}</span>
-            <div className="flex items-center gap-2">
-              {company.hasHeadcountAlert && (
-                <span className="px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-app-red text-xs font-medium flex items-center gap-1">
-                  <Warning size={10} />
-                  Headcount
-                  {company.headcountChangePercent !== null &&
-                    ` ${company.headcountChangePercent >= 0 ? "+" : ""}${company.headcountChangePercent.toFixed(1)}%`}
-                </span>
-              )}
-              {company.hasSentimentAlert && (
-                <span className="px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-app-orange text-xs font-medium flex items-center gap-1">
-                  <Warning size={10} />
-                  Sentiment
-                  {company.avgSentimentScore !== null &&
-                    ` ${company.avgSentimentScore.toFixed(0)}`}
-                </span>
-              )}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="dashboard-subtle-surface dashboard-kicker rounded-2xl px-3 py-2 text-center">
+              Calm
+            </div>
+            <div className="dashboard-subtle-surface dashboard-kicker rounded-2xl px-3 py-2 text-center">
+              Mixed
+            </div>
+            <div className="dashboard-subtle-surface dashboard-kicker rounded-2xl px-3 py-2 text-center">
+              Stressed
             </div>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
 }
 
 function ChangePill({ pct }: { pct: number | null }) {
-  if (pct === null) return <span className="text-app-text-dim">—</span>;
+  if (pct === null) return <span className="dashboard-data-muted text-xs">—</span>;
   const isPositive = pct >= 0;
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tabular-nums ${
-        isPositive ? "bg-green-500/10 text-app-green" : "bg-red-500/10 text-app-red"
-      }`}
+      className={
+        isPositive
+          ? "dashboard-chip dashboard-chip-positive ml-auto"
+          : "dashboard-chip dashboard-chip-negative ml-auto"
+      }
     >
       {isPositive ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
       {isPositive ? "+" : ""}
@@ -378,24 +499,14 @@ function ChangePill({ pct }: { pct: number | null }) {
 }
 
 function SentimentBar({ score }: { score: number | null }) {
-  if (score === null) return <span className="text-app-text-dim">—</span>;
-  const gradientStyle =
-    score <= 30
-      ? "bg-green-500"
-      : score <= 60
-      ? "bg-yellow-500"
-      : score <= 80
-      ? "bg-orange-500"
-      : "bg-red-500";
+  if (score === null) return <span className="dashboard-data-muted text-xs">—</span>;
+  const sentimentState = getSentimentState(score);
   return (
-    <span className="flex items-center gap-2">
-      <span className="w-16 h-2 rounded-full bg-app-border overflow-hidden flex-shrink-0">
-        <span
-          className={`h-full rounded-full block ${gradientStyle}`}
-          style={{ width: `${score}%` }}
-        />
+    <span className="ml-auto flex items-center justify-end gap-2">
+      <span className="h-2 w-16 flex-shrink-0 overflow-hidden rounded-full bg-app-border">
+        <span className={`block h-full rounded-full ${sentimentState.bar}`} style={{ width: `${score}%` }} />
       </span>
-      <span className="text-app-text-muted text-xs tabular-nums font-medium">
+      <span className={`text-xs font-medium tabular-nums ${sentimentState.tone}`}>
         {score.toFixed(0)}
       </span>
     </span>
@@ -410,19 +521,23 @@ function AlertBadges({
   hasSentimentAlert: boolean;
 }) {
   if (!hasHeadcountAlert && !hasSentimentAlert)
-    return <span className="text-app-text-dim">—</span>;
+    return (
+      <span className="dashboard-chip dashboard-chip-neutral ml-auto">
+        Clear
+      </span>
+    );
   return (
-    <div className="flex gap-1 flex-wrap">
+    <div className="ml-auto flex flex-wrap justify-end gap-1">
       {hasHeadcountAlert && (
-        <span className="px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-app-red text-xs font-medium flex items-center gap-1">
-          <Warning size={10} />
-          Headcount
+        <span className="dashboard-chip dashboard-chip-negative">
+          <ArrowDown size={9} />
+          HC
         </span>
       )}
       {hasSentimentAlert && (
-        <span className="px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-app-orange text-xs font-medium flex items-center gap-1">
-          <Warning size={10} />
-          Sentiment
+        <span className="dashboard-chip dashboard-chip-caution">
+          <Pulse size={9} />
+          NEG
         </span>
       )}
     </div>
