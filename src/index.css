@@ -6,25 +6,26 @@
    ================================================ */
 
 @theme {
-  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-app-bg: #f8f9fb;
-  --color-app-surface: #ffffff;
-  --color-app-surface-hover: #f1f3f5;
-  --color-app-surface-raised: #ffffff;
-  --color-app-border: #e2e5ea;
-  --color-app-border-subtle: #eef0f3;
-  --color-app-accent: #1e3a5f;
-  --color-app-accent-light: #2d5a8e;
-  --color-app-accent-dim: #0f2440;
-  --color-app-text: #1a1d23;
-  --color-app-text-muted: #6b7280;
-  --color-app-text-dim: #9ca3af;
-  --color-app-red: #dc2626;
-  --color-app-green: #16a34a;
-  --color-app-yellow: #d97706;
-  --color-app-orange: #ea580c;
+  --color-app-bg: #0f1117;
+  --color-app-surface: #181b23;
+  --color-app-surface-hover: #1f2330;
+  --color-app-surface-raised: #242836;
+  --color-app-border: #2a2e3d;
+  --color-app-border-subtle: #1e2230;
+  --color-app-accent: #4a8eff;
+  --color-app-accent-light: #6ba3ff;
+  --color-app-accent-dim: #2d5a8e;
+  --color-app-text: #e8eaed;
+  --color-app-text-muted: #8b929e;
+  --color-app-text-dim: #4e5564;
+  --color-app-red: #f87171;
+  --color-app-green: #4ade80;
+  --color-app-yellow: #fbbf24;
+  --color-app-orange: #fb923c;
 }
 
 *,
@@ -38,8 +39,18 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f0f2f5;
+  background-color: #0b0d12;
   color: var(--color-app-text);
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+code, pre, kbd {
+  font-family: var(--font-mono);
 }
 
 #root {
@@ -50,8 +61,8 @@ body {
   flex-direction: column;
   background-color: var(--color-app-bg);
   box-shadow:
-    0 0 40px rgba(0, 0, 0, 0.04),
-    0 0 1px rgba(0, 0, 0, 0.08);
+    0 0 60px rgba(0, 0, 0, 0.5),
+    0 0 1px rgba(0, 0, 0, 0.8);
 }
 
 /* ------------------------------------------------ Backgrounds */
@@ -63,16 +74,35 @@ body {
 .card-panel {
   background: var(--color-app-surface);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--color-app-border-subtle);
+}
+
+/* ------------------------------------------------ Stat cards */
+.stat-card {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ------------------------------------------------ Alert rows */
+.alert-row {
+  border-left: 2px solid rgba(248, 113, 113, 0.35);
 }
 
 .card-panel-bottom {
   background: var(--color-app-surface);
   box-shadow:
-    0 -1px 3px rgba(0, 0, 0, 0.06),
-    0 -1px 2px rgba(0, 0, 0, 0.04);
+    0 -1px 3px rgba(0, 0, 0, 0.3),
+    0 -1px 2px rgba(0, 0, 0, 0.2);
   border-top: 1px solid var(--color-app-border);
   border-radius: 16px 16px 0 0;
 }
@@ -91,7 +121,7 @@ body {
   background: var(--color-app-surface);
   box-shadow:
     0 1px 0 var(--color-app-border),
-    0 2px 8px rgba(0, 0, 0, 0.04);
+    0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* ------------------------------------------------ Navigation */
@@ -120,7 +150,7 @@ body {
 }
 
 .nav-link-icon-active {
-  filter: drop-shadow(0 0 4px rgba(30, 58, 95, 0.45));
+  filter: drop-shadow(0 0 4px rgba(74, 142, 255, 0.6));
 }
 
 /* ------------------------------------------------ Scrollbars */
@@ -141,17 +171,17 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(30, 58, 95, 0.15);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(30, 58, 95, 0.3);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(30, 58, 95, 0.15) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
 }
 
 /* ------------------------------------------------ Animations */
@@ -213,8 +243,8 @@ body {
   inset: 0;
   border-radius: inherit;
   box-shadow:
-    0 0 20px rgba(30, 58, 95, 0.3),
-    0 0 50px rgba(30, 58, 95, 0.1);
+    0 0 20px rgba(74, 142, 255, 0.3),
+    0 0 50px rgba(74, 142, 255, 0.1);
   animation: pulse-accent 2s ease-in-out infinite;
   pointer-events: none;
   will-change: opacity;

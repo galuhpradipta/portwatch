@@ -116,7 +116,7 @@ export default function CompaniesPage() {
                 disabled={isLoading}
                 className={`mt-3 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   inPortfolio
-                    ? "bg-gray-100 text-app-text-muted hover:bg-gray-200"
+                    ? "bg-white/5 text-app-text-muted hover:bg-white/10"
                     : "bg-[var(--color-app-accent)]/20 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/30"
                 } disabled:opacity-50`}
               >

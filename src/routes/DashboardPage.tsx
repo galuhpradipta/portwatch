@@ -1,6 +1,6 @@
 import { useLoaderData, useNavigate, useRevalidator } from "react-router";
 import { useState } from "react";
-import { ArrowsClockwise, ArrowUp, ArrowDown, Buildings, Warning } from "@phosphor-icons/react";
+import { ArrowsClockwise, ArrowUp, ArrowDown, Buildings, Warning, Users, Pulse } from "@phosphor-icons/react";
 import { useApi } from "../shared/hooks/useApi.ts";
 import type { PortfolioCompany } from "../shared/types.ts";
 
@@ -10,12 +10,6 @@ type SortDir = "asc" | "desc";
 function formatNumber(n: number | null): string {
   if (n === null) return "—";
   return n.toLocaleString();
-}
-
-function formatChange(pct: number | null): string {
-  if (pct === null) return "—";
-  const sign = pct >= 0 ? "+" : "";
-  return `${sign}${pct.toFixed(1)}%`;
 }
 
 export default function DashboardPage() {
@@ -56,6 +50,16 @@ export default function DashboardPage() {
     return sortDir === "asc" ? cmp : -cmp;
   });
 
+  const totalHeadcount = portfolio.reduce((sum, c) => sum + (c.latestHeadcount ?? 0), 0);
+  const sentimentScores = portfolio
+    .filter((c) => c.avgSentimentScore !== null)
+    .map((c) => c.avgSentimentScore as number);
+  const avgSentiment =
+    sentimentScores.length > 0
+      ? sentimentScores.reduce((a, b) => a + b, 0) / sentimentScores.length
+      : null;
+  const activeAlerts = portfolio.filter((c) => c.hasHeadcountAlert || c.hasSentimentAlert);
+
   return (
     <div>
       {/* Header row */}
@@ -86,80 +90,216 @@ export default function DashboardPage() {
           </button>
         </div>
       ) : (
-        <div className="card-panel rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-app-border text-app-text-muted">
-                {(
-                  [
-                    { key: "name" as SortKey, label: "Company" },
-                    { key: "headcount" as SortKey, label: "Headcount" },
-                    { key: "change" as SortKey, label: "Change %" },
-                    { key: "sentiment" as SortKey, label: "Sentiment" },
-                  ] as const
-                ).map(({ key, label }) => (
-                  <th
-                    key={key}
-                    className="px-4 py-3 text-left font-medium cursor-pointer hover:text-app-text select-none"
-                    onClick={() => handleSort(key)}
-                  >
-                    <span className="flex items-center gap-1">
-                      {label}
-                      {sortKey === key && (
-                        sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />
-                      )}
-                    </span>
-                  </th>
-                ))}
-                <th className="px-4 py-3 text-left font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((company) => {
-                const changeColor =
-                  company.headcountChangePercent === null
-                    ? "text-app-text-dim"
-                    : company.headcountChangePercent < 0
-                    ? "text-app-red"
-                    : "text-app-green";
+        <>
+          {/* Zone 1: Summary Stats */}
+          <SummaryStats
+            count={portfolio.length}
+            totalHeadcount={totalHeadcount}
+            avgSentiment={avgSentiment}
+            activeAlerts={activeAlerts.length}
+          />
 
-                return (
+          {/* Zone 2: Alerts Panel (conditional) */}
+          {activeAlerts.length > 0 && (
+            <AlertsPanel
+              alerts={activeAlerts}
+              onNavigate={(id) => navigate(`/companies/${id}`)}
+            />
+          )}
+
+          {/* Zone 3: Enhanced Portfolio Table */}
+          <div className="card-panel rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-app-border">
+                  {(
+                    [
+                      { key: "name" as SortKey, label: "Company" },
+                      { key: "headcount" as SortKey, label: "Headcount" },
+                      { key: "change" as SortKey, label: "Change %" },
+                      { key: "sentiment" as SortKey, label: "Sentiment" },
+                    ] as const
+                  ).map(({ key, label }) => (
+                    <th
+                      key={key}
+                      className="px-5 py-3 text-left text-xs uppercase tracking-wider font-semibold text-app-text-muted cursor-pointer hover:text-app-text select-none transition-colors"
+                      onClick={() => handleSort(key)}
+                    >
+                      <span className="flex items-center gap-1">
+                        {label}
+                        {sortKey === key &&
+                          (sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
+                      </span>
+                    </th>
+                  ))}
+                  <th className="px-5 py-3 text-left text-xs uppercase tracking-wider font-semibold text-app-text-muted">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((company) => (
                   <tr
                     key={company.id}
                     className="border-b border-app-border-subtle last:border-0 hover:bg-app-surface-hover cursor-pointer transition-colors"
                     onClick={() => navigate(`/companies/${company.id}`)}
                   >
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-app-text">{company.name}</div>
-                      <div className="text-xs text-app-text-dim mt-0.5">{company.industry}</div>
+                    <td className="px-5 py-4">
+                      <div className="font-semibold text-app-text">{company.name}</div>
+                      <div className="text-xs font-medium text-app-accent mt-0.5">
+                        {company.industry}
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-app-text">
+                    <td className="px-5 py-4 font-bold tabular-nums text-app-text">
                       {formatNumber(company.latestHeadcount)}
                     </td>
-                    <td className={`px-4 py-3 font-medium ${changeColor}`}>
-                      {formatChange(company.headcountChangePercent)}
+                    <td className="px-5 py-4">
+                      <ChangePill pct={company.headcountChangePercent} />
                     </td>
-                    <td className="px-4 py-3">
-                      <SentimentDot score={company.avgSentimentScore} />
+                    <td className="px-5 py-4">
+                      <SentimentBar score={company.avgSentimentScore} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-4">
                       <AlertBadges
                         hasHeadcountAlert={company.hasHeadcountAlert}
                         hasSentimentAlert={company.hasSentimentAlert}
                       />
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-function SentimentDot({ score }: { score: number | null }) {
+function SummaryStats({
+  count,
+  totalHeadcount,
+  avgSentiment,
+  activeAlerts,
+}: {
+  count: number;
+  totalHeadcount: number;
+  avgSentiment: number | null;
+  activeAlerts: number;
+}) {
+  const sentimentColor =
+    avgSentiment === null
+      ? "text-app-text-muted"
+      : avgSentiment <= 40
+      ? "text-app-green"
+      : avgSentiment <= 70
+      ? "text-app-yellow"
+      : "text-app-red";
+
+  return (
+    <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="stat-card card-panel rounded-xl p-4">
+        <Buildings size={20} className="text-app-text-dim mb-3" />
+        <div className="text-2xl font-extrabold text-app-text tabular-nums">
+          {count}
+          <span className="text-base font-semibold text-app-text-muted">/10</span>
+        </div>
+        <div className="text-xs text-app-text-muted mt-1">Portfolio</div>
+      </div>
+      <div className="stat-card card-panel rounded-xl p-4">
+        <Users size={20} className="text-app-text-dim mb-3" />
+        <div className="text-2xl font-extrabold text-app-text tabular-nums">
+          {totalHeadcount > 0 ? totalHeadcount.toLocaleString() : "—"}
+        </div>
+        <div className="text-xs text-app-text-muted mt-1">Total Headcount</div>
+      </div>
+      <div className="stat-card card-panel rounded-xl p-4">
+        <Pulse size={20} className="text-app-text-dim mb-3" />
+        <div className={`text-2xl font-extrabold tabular-nums ${sentimentColor}`}>
+          {avgSentiment !== null ? avgSentiment.toFixed(0) : "—"}
+        </div>
+        <div className="text-xs text-app-text-muted mt-1">Avg Sentiment</div>
+      </div>
+      <div className="stat-card card-panel rounded-xl p-4">
+        <Warning
+          size={20}
+          className={`mb-3 ${activeAlerts > 0 ? "text-app-red" : "text-app-text-dim"}`}
+        />
+        <div
+          className={`text-2xl font-extrabold tabular-nums ${
+            activeAlerts > 0 ? "text-app-red" : "text-app-text"
+          }`}
+        >
+          {activeAlerts}
+        </div>
+        <div className="text-xs text-app-text-muted mt-1">Active Alerts</div>
+      </div>
+    </div>
+  );
+}
+
+function AlertsPanel({
+  alerts,
+  onNavigate,
+}: {
+  alerts: PortfolioCompany[];
+  onNavigate: (id: string) => void;
+}) {
+  return (
+    <div className="card-panel rounded-xl p-5 mb-6">
+      <h2 className="text-xs uppercase tracking-wider font-semibold text-app-text-muted mb-3">
+        Active Alerts
+      </h2>
+      <div className="space-y-1">
+        {alerts.map((company) => (
+          <div
+            key={company.id}
+            className="alert-row flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-app-surface-raised cursor-pointer transition-colors"
+            onClick={() => onNavigate(company.id)}
+          >
+            <span className="font-semibold text-app-text text-sm">{company.name}</span>
+            <div className="flex items-center gap-2">
+              {company.hasHeadcountAlert && (
+                <span className="px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-app-red text-xs font-medium flex items-center gap-1">
+                  <Warning size={10} />
+                  Headcount
+                  {company.headcountChangePercent !== null &&
+                    ` ${company.headcountChangePercent >= 0 ? "+" : ""}${company.headcountChangePercent.toFixed(1)}%`}
+                </span>
+              )}
+              {company.hasSentimentAlert && (
+                <span className="px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-app-orange text-xs font-medium flex items-center gap-1">
+                  <Warning size={10} />
+                  Sentiment
+                  {company.avgSentimentScore !== null &&
+                    ` ${company.avgSentimentScore.toFixed(0)}`}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChangePill({ pct }: { pct: number | null }) {
+  if (pct === null) return <span className="text-app-text-dim">—</span>;
+  const isPositive = pct >= 0;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tabular-nums ${
+        isPositive ? "bg-green-500/10 text-app-green" : "bg-red-500/10 text-app-red"
+      }`}
+    >
+      {isPositive ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
+      {isPositive ? "+" : ""}
+      {pct.toFixed(1)}%
+    </span>
+  );
+}
+
+function SentimentBar({ score }: { score: number | null }) {
   if (score === null) return <span className="text-app-text-dim">—</span>;
   const color =
     score <= 30
@@ -170,9 +310,13 @@ function SentimentDot({ score }: { score: number | null }) {
       ? "bg-orange-500"
       : "bg-red-500";
   return (
-    <span className="flex items-center gap-1.5">
-      <span className={`inline-block w-2 h-2 rounded-full ${color}`} />
-      <span className="text-app-text-muted">{score.toFixed(0)}</span>
+    <span className="flex items-center gap-2">
+      <span className="w-10 h-1.5 rounded-full bg-app-border overflow-hidden flex-shrink-0">
+        <span className={`h-full rounded-full block ${color}`} style={{ width: `${score}%` }} />
+      </span>
+      <span className="text-app-text-muted text-xs tabular-nums font-medium">
+        {score.toFixed(0)}
+      </span>
     </span>
   );
 }
@@ -184,17 +328,18 @@ function AlertBadges({
   hasHeadcountAlert: boolean;
   hasSentimentAlert: boolean;
 }) {
-  if (!hasHeadcountAlert && !hasSentimentAlert) return <span className="text-app-text-dim">—</span>;
+  if (!hasHeadcountAlert && !hasSentimentAlert)
+    return <span className="text-app-text-dim">—</span>;
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1 flex-wrap">
       {hasHeadcountAlert && (
-        <span className="px-2 py-0.5 rounded-full bg-red-50 text-app-red text-xs font-medium flex items-center gap-1">
+        <span className="px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-app-red text-xs font-medium flex items-center gap-1">
           <Warning size={10} />
           Headcount
         </span>
       )}
       {hasSentimentAlert && (
-        <span className="px-2 py-0.5 rounded-full bg-orange-50 text-app-orange text-xs font-medium flex items-center gap-1">
+        <span className="px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-app-orange text-xs font-medium flex items-center gap-1">
           <Warning size={10} />
           Sentiment
         </span>

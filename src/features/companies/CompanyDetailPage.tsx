@@ -86,7 +86,7 @@ export default function CompanyDetailPage() {
             disabled={loading}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
               inPortfolio
-                ? "bg-gray-100 text-app-text-muted hover:bg-gray-200"
+                ? "bg-white/5 text-app-text-muted hover:bg-white/10"
                 : "bg-[var(--color-app-accent)] text-white hover:opacity-90"
             }`}
           >
