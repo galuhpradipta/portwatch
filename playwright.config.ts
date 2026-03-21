@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:8788",
+    baseURL: "http://localhost:8789",
     trace: "on-first-retry",
   },
   projects: [
@@ -23,7 +23,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "pnpm db:migrate:local && pnpm build && pnpm cf:dev",
-    url: "http://localhost:8788",
+    url: "http://localhost:8789",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

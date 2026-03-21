@@ -10,7 +10,7 @@ export default defineConfig({
   workers: 1,
   reporter: "list",
   use: {
-    baseURL: "http://localhost:8788",
+    baseURL: "http://localhost:8789",
     launchOptions: {
       headless: false,
       slowMo: 2_000,
@@ -24,7 +24,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "pnpm cf:dev",
-    url: "http://localhost:8788",
+    url: "http://localhost:8789",
     reuseExistingServer: true,
     timeout: 30_000,
   },
