@@ -188,10 +188,12 @@ export default function CompaniesPage() {
             <label className="relative block">
               <MagnifyingGlass
                 size={15}
+                aria-hidden="true"
                 className="companies-toolbar-icon absolute left-3 top-1/2 -translate-y-1/2"
               />
               <input
                 type="text"
+                aria-label="Search company or industry"
                 placeholder="Search company or industry"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -202,9 +204,11 @@ export default function CompaniesPage() {
             <label className="relative block">
               <FunnelSimple
                 size={14}
+                aria-hidden="true"
                 className="companies-select-icon absolute right-3 top-1/2 -translate-y-1/2"
               />
               <select
+                aria-label="Filter by industry"
                 value={industryFilter}
                 onChange={(event) => setIndustryFilter(event.target.value)}
                 className="companies-compact-control companies-compact-select"
@@ -221,9 +225,11 @@ export default function CompaniesPage() {
             <label className="relative block">
               <FunnelSimple
                 size={14}
+                aria-hidden="true"
                 className="companies-select-icon absolute right-3 top-1/2 -translate-y-1/2"
               />
               <select
+                aria-label="Filter by country"
                 value={countryFilter}
                 onChange={(event) => setCountryFilter(event.target.value)}
                 className="companies-compact-control companies-compact-select"
@@ -272,6 +278,9 @@ export default function CompaniesPage() {
                       <th
                         key={key}
                         onClick={() => handleSort(key)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSort(key); } }}
+                        tabIndex={0}
+                        aria-sort={sortKey === key ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
                         className={`companies-table-sort dashboard-kicker px-4 py-3 select-none transition-colors hover:text-app-text md:px-5 ${align}`}
                       >
                         <span
@@ -281,7 +290,7 @@ export default function CompaniesPage() {
                         >
                           {label}
                           {sortKey === key &&
-                            (sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
+                            (sortDir === "asc" ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />)}
                         </span>
                       </th>
                     ))}
@@ -301,6 +310,8 @@ export default function CompaniesPage() {
                         <td
                           className="cursor-pointer px-4 py-3 align-middle md:px-5"
                           onClick={() => navigate(`/companies/${company.id}`)}
+                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/companies/${company.id}`); } }}
+                          tabIndex={0}
                         >
                           <div className="flex min-w-0 items-center gap-3">
                             <CompanyLogo name={company.name} website={company.website} logoUrl={company.logoUrl} size={30} />

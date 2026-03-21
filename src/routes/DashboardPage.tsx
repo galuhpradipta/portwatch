@@ -125,9 +125,10 @@ export default function DashboardPage() {
         <button
           onClick={handleRefresh}
           disabled={refreshing || portfolio.length === 0}
+          aria-busy={refreshing}
           className="dashboard-action flex items-center gap-2 px-4 py-2 text-sm"
         >
-          <ArrowsClockwise size={16} className={refreshing ? "animate-spin" : ""} />
+          <ArrowsClockwise size={16} aria-hidden="true" className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Refreshing..." : "Refresh All"}
         </button>
       </div>
@@ -203,6 +204,9 @@ export default function DashboardPage() {
                           key === "name" ? "text-left" : "text-right"
                         }`}
                         onClick={() => handleSort(key)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSort(key); } }}
+                        tabIndex={0}
+                        aria-sort={sortKey === key ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
                       >
                         <span
                           className={`inline-flex items-center gap-1 ${
@@ -211,7 +215,7 @@ export default function DashboardPage() {
                         >
                           {label}
                           {sortKey === key &&
-                            (sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
+                            (sortDir === "asc" ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />)}
                         </span>
                       </th>
                     ))}
@@ -224,6 +228,8 @@ export default function DashboardPage() {
                       key={company.id}
                       className="dashboard-table-row group cursor-pointer"
                       onClick={() => navigate(`/companies/${company.id}`)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/companies/${company.id}`); } }}
+                      tabIndex={0}
                     >
                       <td className="px-5 py-4 align-top">
                         <div className="flex min-w-0 items-center gap-3">
@@ -356,7 +362,14 @@ function SummaryStats({
         </div>
 
         <div className="mt-3 space-y-1.5">
-          <div className="dashboard-progress-track h-2 overflow-hidden bg-app-border">
+          <div
+            className="dashboard-progress-track h-2 overflow-hidden bg-app-border"
+            role="progressbar"
+            aria-valuenow={utilization}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Portfolio utilization: ${utilization}%`}
+          >
             <div
               className="dashboard-progress-fill h-full bg-[linear-gradient(90deg,var(--color-app-accent-dim),var(--color-app-accent))]"
               style={{ width: `${utilization}%` }}
@@ -423,7 +436,14 @@ function SummaryStats({
 
         <div className="mt-3 space-y-1.5">
           {avgSentiment !== null && (
-            <div className="dashboard-progress-track h-2 overflow-hidden bg-app-border">
+            <div
+              className="dashboard-progress-track h-2 overflow-hidden bg-app-border"
+              role="progressbar"
+              aria-valuenow={Math.round(avgSentiment)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Average sentiment: ${sentimentState.label}`}
+            >
               <div
                 className={`dashboard-progress-fill h-full transition-all ${sentimentState.fill}`}
                 style={{ width: `${avgSentiment}%` }}
@@ -453,7 +473,7 @@ function ChangePill({ pct }: { pct: number | null }) {
           : "dashboard-chip dashboard-chip-negative ml-auto"
       }
     >
-      {isPositive ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
+      {isPositive ? <ArrowUp size={10} aria-hidden="true" /> : <ArrowDown size={10} aria-hidden="true" />}
       {isPositive ? "+" : ""}
       {pct.toFixed(1)}%
     </span>
@@ -492,13 +512,13 @@ function AlertBadges({
     <div className="ml-auto flex flex-wrap justify-end gap-1">
       {hasHeadcountAlert && (
         <span className="dashboard-chip dashboard-chip-negative">
-          <ArrowDown size={9} />
+          <ArrowDown size={9} aria-hidden="true" />
           HC
         </span>
       )}
       {hasSentimentAlert && (
         <span className="dashboard-chip dashboard-chip-caution">
-          <Pulse size={9} />
+          <Pulse size={9} aria-hidden="true" />
           NEG
         </span>
       )}

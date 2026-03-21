@@ -35,17 +35,18 @@ function pickColor(name: string) {
   return PALETTE[hash % PALETTE.length];
 }
 
-type Stage = "logohub" | "favicon" | "initials";
+type Stage = "direct" | "logohub" | "favicon" | "initials";
 
 type Props = {
   name: string;
   website?: string | null;
+  logoUrl?: string | null;
   size?: number;
   className?: string;
 };
 
-export default function CompanyLogo({ name, website, size = 32, className = "" }: Props) {
-  const [stage, setStage] = useState<Stage>("logohub");
+export default function CompanyLogo({ name, website, logoUrl: directUrl, size = 32, className = "" }: Props) {
+  const [stage, setStage] = useState<Stage>(directUrl ? "direct" : "logohub");
   const domain = website ? getDomain(website) : null;
   const initials = getInitials(name);
   const color = pickColor(name);
@@ -53,7 +54,9 @@ export default function CompanyLogo({ name, website, size = 32, className = "" }
   const base = `flex-shrink-0 rounded-lg overflow-hidden ${className}`;
 
   function handleError() {
-    if (stage === "logohub" && domain) {
+    if (stage === "direct") {
+      setStage(domain ? "favicon" : "initials");
+    } else if (stage === "logohub" && domain) {
       setStage("favicon");
     } else {
       setStage("initials");
@@ -61,7 +64,9 @@ export default function CompanyLogo({ name, website, size = 32, className = "" }
   }
 
   const logoUrl =
-    stage === "logohub"
+    stage === "direct"
+      ? directUrl!
+      : stage === "logohub"
       ? `https://logohub.dev/api/v1/logos/${formatLogoId(name)}`
       : stage === "favicon" && domain
       ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
@@ -84,6 +89,8 @@ export default function CompanyLogo({ name, website, size = 32, className = "" }
 
   return (
     <div
+      role="img"
+      aria-label={`${name} logo`}
       style={{
         width: size,
         height: size,

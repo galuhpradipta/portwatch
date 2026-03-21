@@ -80,7 +80,7 @@ export default function Sidebar({
         )}
       </div>
 
-      <nav className="flex-1 flex flex-col gap-1 px-3 pt-2">
+      <nav aria-label="Main navigation" className="flex-1 flex flex-col gap-1 px-3 pt-2">
         <NavItem to="/" label="Dashboard" Icon={ChartLineUp} onClick={onClose} />
         <NavItem to="/companies" label="Companies" Icon={Buildings} onClick={onClose} />
       </nav>
@@ -102,6 +102,7 @@ export default function Sidebar({
           <Tooltip.Root>
             <Tooltip.Trigger
               onClick={() => setShowSignOut(true)}
+              aria-label="Sign out"
               className="sidebar-action-button flex-shrink-0 p-1.5"
             >
               <SignOut size={16} />

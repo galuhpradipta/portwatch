@@ -84,7 +84,7 @@ export default function CompanyDetailPage() {
       <div className="companies-detail-shell radius-shell p-6 mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-4">
-            <CompanyLogo name={company.name} website={company.website} size={48} />
+            <CompanyLogo name={company.name} website={company.website} logoUrl={company.logoUrl} size={48} />
             <div>
               <p className="dashboard-kicker">Company brief</p>
               <h1 className="dashboard-title mt-1 text-2xl">{company.name}</h1>

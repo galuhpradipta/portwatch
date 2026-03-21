@@ -15,6 +15,7 @@ export default function Layout() {
         <div
           className="sidebar-backdrop lg:hidden"
           onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
 
