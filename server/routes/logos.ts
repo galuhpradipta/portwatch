@@ -13,13 +13,6 @@ function formatLogoId(name: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function getDomain(website: string): string | null {
-  try {
-    return new URL(website).hostname.replace(/^www\./, "");
-  } catch {
-    return null;
-  }
-}
 
 export const logosRoutes = new Hono<{ Bindings: Env }>()
   .get("/:companyId", async (c) => {
@@ -47,12 +40,9 @@ export const logosRoutes = new Hono<{ Bindings: Env }>()
       .get();
     if (!company) return c.json({ error: "Not found" }, 404);
 
-    const domain = company.website ? getDomain(company.website) : null;
-
     const sources: string[] = [];
     if (company.logoUrl) sources.push(company.logoUrl);
     sources.push(`https://logohub.dev/api/v1/logos/${formatLogoId(company.name)}`);
-    if (domain) sources.push(`https://www.google.com/s2/favicons?domain=${domain}&sz=64`);
 
     // 3. Try each source, cache first success
     for (const url of sources) {

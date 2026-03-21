@@ -6,7 +6,7 @@ type Crumb = { label: string; to?: string };
 export default function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
   return (
     <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-app-text-muted mb-4">
-      {crumbs.map((crumb) => (
+      {crumbs.map((crumb, i) => (
         <span key={crumb.to ?? crumb.label} className="flex items-center gap-1.5">
           {i > 0 && <CaretRight size={12} className="text-app-text-dim flex-shrink-0" />}
           {crumb.to ? (
