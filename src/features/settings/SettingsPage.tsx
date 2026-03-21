@@ -1,5 +1,5 @@
 import { useLoaderData } from "react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Field } from "@base-ui/react/field";
 import { useApi } from "../../shared/hooks/useApi.ts";
 import { useAuthStore } from "../../shared/store/authStore.ts";
@@ -28,6 +28,8 @@ export default function SettingsPage() {
   );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  useEffect(() => () => { if (savedTimerRef.current) clearTimeout(savedTimerRef.current); }, []);
 
   const parsedThreshold = Number.parseInt(thresholdInput, 10);
   const threshold =
@@ -53,7 +55,8 @@ export default function SettingsPage() {
 
       setThresholdInput(String(nextThreshold));
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      savedTimerRef.current = setTimeout(() => setSaved(false), 2000);
     } finally {
       setSaving(false);
     }

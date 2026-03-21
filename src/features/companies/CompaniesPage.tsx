@@ -40,9 +40,19 @@ export default function CompaniesPage() {
   const [countryFilter, setCountryFilter] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [portfolioIds, setPortfolioIds] = useState<Set<string>>(
-    new Set(portfolio.map((p) => p.id)),
+  const serverPortfolioIds = useMemo(
+    () => new Set(portfolio.map((p) => p.id)),
+    [portfolio],
   );
+  const [overrides, setOverrides] = useState<Map<string, boolean>>(new Map());
+  const portfolioIds = useMemo(() => {
+    const ids = new Set(serverPortfolioIds);
+    for (const [id, tracked] of overrides) {
+      if (tracked) ids.add(id);
+      else ids.delete(id);
+    }
+    return ids;
+  }, [serverPortfolioIds, overrides]);
   const [loading, setLoading] = useState<string | null>(null);
 
   const industries = useMemo(
@@ -108,11 +118,7 @@ export default function CompaniesPage() {
     try {
       if (portfolioIds.has(companyId)) {
         await api.del(`/portfolio/${companyId}`);
-        setPortfolioIds((prev) => {
-          const next = new Set(prev);
-          next.delete(companyId);
-          return next;
-        });
+        setOverrides((prev) => { const next = new Map(prev); next.set(companyId, false); return next; });
         return;
       }
 
@@ -125,7 +131,7 @@ export default function CompaniesPage() {
       }
 
       await api.post("/portfolio", { companyId });
-      setPortfolioIds((prev) => new Set(prev).add(companyId));
+      setOverrides((prev) => { const next = new Map(prev); next.set(companyId, true); return next; });
     } finally {
       setLoading(null);
     }

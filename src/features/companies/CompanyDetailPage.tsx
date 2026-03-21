@@ -22,9 +22,14 @@ export default function CompanyDetailPage() {
   const { company, portfolio } = useLoaderData() as LoaderData;
   const api = useApi();
 
-  const [inPortfolio, setInPortfolio] = useState(
-    portfolio.some((p) => p.id === company.id),
-  );
+  const serverInPortfolio = portfolio.some((p) => p.id === company.id);
+  const [prevServerInPortfolio, setPrevServerInPortfolio] = useState(serverInPortfolio);
+  const [inPortfolio, setInPortfolio] = useState(serverInPortfolio);
+
+  if (serverInPortfolio !== prevServerInPortfolio) {
+    setPrevServerInPortfolio(serverInPortfolio);
+    setInPortfolio(serverInPortfolio);
+  }
   const [loading, setLoading] = useState(false);
 
   async function togglePortfolio() {

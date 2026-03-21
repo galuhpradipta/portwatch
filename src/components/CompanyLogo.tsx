@@ -47,6 +47,13 @@ type Props = {
 
 export default function CompanyLogo({ name, website, logoUrl: directUrl, size = 32, className = "" }: Props) {
   const [stage, setStage] = useState<Stage>(directUrl ? "direct" : "logohub");
+  const [prevDirectUrl, setPrevDirectUrl] = useState(directUrl);
+
+  if (directUrl !== prevDirectUrl) {
+    setPrevDirectUrl(directUrl);
+    setStage(directUrl ? "direct" : "logohub");
+  }
+
   const domain = website ? getDomain(website) : null;
   const initials = getInitials(name);
   const color = pickColor(name);

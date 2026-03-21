@@ -19,18 +19,10 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const submitButton = (e.currentTarget as HTMLFormElement).querySelector<HTMLButtonElement>(
-      'button[type="submit"]',
-    );
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = "Creating account…";
-    }
     flushSync(() => {
       setError("");
       setLoading(true);
     });
-    await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
