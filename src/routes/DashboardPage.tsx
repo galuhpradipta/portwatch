@@ -179,7 +179,46 @@ export default function DashboardPage() {
             }
             helper={<span className="hidden md:inline">Click a header to sort</span>}
           >
-            <div className="overflow-x-auto">
+            {/* Mobile card list */}
+            <div className="md:hidden divide-y divide-app-border-subtle">
+              {sorted.map((company) => (
+                <div
+                  key={company.id}
+                  className="dashboard-table-row group cursor-pointer px-4 py-4"
+                  onClick={() => navigate(`/companies/${company.id}`)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/companies/${company.id}`); } }}
+                  tabIndex={0}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <CompanyLogo id={company.id} name={company.name} size={32} />
+                      <div className="min-w-0">
+                        <div className="truncate dashboard-title text-base">{company.name}</div>
+                        <div className="dashboard-company-meta mt-0.5">{company.industry} · {company.country}</div>
+                      </div>
+                    </div>
+                    <AlertBadges hasHeadcountAlert={company.hasHeadcountAlert} hasSentimentAlert={company.hasSentimentAlert} />
+                  </div>
+                  <div className="mt-3 flex items-center gap-5 text-sm">
+                    <div>
+                      <div className="dashboard-company-meta text-[11px] mb-1">Headcount</div>
+                      <span className="dashboard-data font-semibold tabular-nums text-sm">{formatNumber(company.latestHeadcount)}</span>
+                    </div>
+                    <div>
+                      <div className="dashboard-company-meta text-[11px] mb-1">Change</div>
+                      <ChangePill pct={company.headcountChangePercent} />
+                    </div>
+                    <div>
+                      <div className="dashboard-company-meta text-[11px] mb-1">Sentiment</div>
+                      <SentimentBar score={company.avgSentimentScore} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="dashboard-table w-full min-w-[760px] table-fixed text-sm">
                 <colgroup>
                   <col style={{ width: "40%" }} />
@@ -233,7 +272,7 @@ export default function DashboardPage() {
                     >
                       <td className="px-5 py-4 align-top">
                         <div className="flex min-w-0 items-center gap-3">
-                          <CompanyLogo name={company.name} website={company.website} logoUrl={company.logoUrl} size={32} />
+                          <CompanyLogo id={company.id} name={company.name} size={32} />
                           <div className="min-w-0">
                             <div className="truncate dashboard-title text-base">
                               {company.name}
@@ -295,7 +334,7 @@ function SummaryStats({
   const affectedShare = count > 0 ? Math.round((activeAlerts / count) * 100) : 0;
 
   return (
-    <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-4">
+    <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
       <MetricCard primary className="animate-fade-in-up animate-stagger-1">
         <div className="flex items-start justify-between gap-4">
           <div>

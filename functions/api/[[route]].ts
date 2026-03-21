@@ -5,6 +5,7 @@ import { authRoutes } from "../../server/routes/auth.ts";
 import { companiesRoutes } from "../../server/routes/companies.ts";
 import { portfolioRoutes } from "../../server/routes/portfolio.ts";
 import { adminRoutes } from "../../server/routes/admin.ts";
+import { logosRoutes } from "../../server/routes/logos.ts";
 import type { Env } from "../../server/lib/env.ts";
 
 const app = new Hono<{ Bindings: Env }>().basePath("/api");
@@ -22,6 +23,7 @@ app.route("/auth", authRoutes);
 app.route("/companies", companiesRoutes);
 app.route("/portfolio", portfolioRoutes);
 app.route("/admin", adminRoutes);
+app.route("/logos", logosRoutes);
 
 app.get("/health", (c) => c.json({ ok: true }));
 

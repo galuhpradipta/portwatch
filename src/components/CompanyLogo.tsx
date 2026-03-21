@@ -9,21 +9,6 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-function getDomain(website: string) {
-  try {
-    return new URL(website).hostname.replace(/^www\./, "");
-  } catch {
-    return null;
-  }
-}
-
-function formatLogoId(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 const PALETTE = [
   "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b",
   "#10b981", "#3b82f6", "#ef4444", "#14b8a6",
@@ -35,64 +20,35 @@ function pickColor(name: string) {
   return PALETTE[hash % PALETTE.length];
 }
 
-type Stage = "direct" | "logohub" | "favicon" | "initials";
-
 type Props = {
+  id: string;
   name: string;
-  website?: string | null;
-  logoUrl?: string | null;
   size?: number;
   className?: string;
 };
 
-export default function CompanyLogo({ name, website, logoUrl: directUrl, size = 32, className = "" }: Props) {
-  const [stage, setStage] = useState<Stage>(directUrl ? "direct" : "logohub");
-  const [prevDirectUrl, setPrevDirectUrl] = useState(directUrl);
-
-  if (directUrl !== prevDirectUrl) {
-    setPrevDirectUrl(directUrl);
-    setStage(directUrl ? "direct" : "logohub");
-  }
-
-  const domain = website ? getDomain(website) : null;
-  const initials = getInitials(name);
-  const color = pickColor(name);
+export default function CompanyLogo({ id, name, size = 32, className = "" }: Props) {
+  const [failed, setFailed] = useState(false);
 
   const base = `flex-shrink-0 rounded-lg overflow-hidden ${className}`;
 
-  function handleError() {
-    if (stage === "direct") {
-      setStage(domain ? "favicon" : "initials");
-    } else if (stage === "logohub" && domain) {
-      setStage("favicon");
-    } else {
-      setStage("initials");
-    }
-  }
-
-  const logoUrl =
-    stage === "direct"
-      ? directUrl!
-      : stage === "logohub"
-      ? `https://logohub.dev/api/v1/logos/${formatLogoId(name)}`
-      : stage === "favicon" && domain
-      ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
-      : null;
-
-  if (logoUrl) {
+  if (!failed) {
     return (
       <img
-        src={logoUrl}
+        src={`/api/logos/${id}`}
         alt={`${name} logo`}
         width={size}
         height={size}
         loading="lazy"
         style={{ width: size, height: size }}
         className={`${base} object-contain bg-white p-0.5`}
-        onError={handleError}
+        onError={() => setFailed(true)}
       />
     );
   }
+
+  const initials = getInitials(name);
+  const color = pickColor(name);
 
   return (
     <div

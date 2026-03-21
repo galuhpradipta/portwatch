@@ -264,7 +264,49 @@ export default function CompaniesPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile card list */}
+        <div className="md:hidden divide-y divide-app-border-subtle">
+          {filtered.map((company) => {
+            const inPortfolio = portfolioIds.has(company.id);
+            const isLoading = loading === company.id;
+            return (
+              <div key={company.id} className="dashboard-table-row companies-table-row group px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+                    onClick={() => navigate(`/companies/${company.id}`)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/companies/${company.id}`); } }}
+                    tabIndex={0}
+                  >
+                    <CompanyLogo id={company.id} name={company.name} size={30} />
+                    <div className="min-w-0">
+                      <div className="truncate dashboard-title text-[15px]">{company.name}</div>
+                      <div className="dashboard-company-meta mt-0.5 truncate">{company.industry} · {company.country}</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => togglePortfolio(company.id)}
+                    disabled={isLoading}
+                    className={`companies-inline-action flex-shrink-0 ${inPortfolio ? "companies-inline-action-secondary" : "companies-inline-action-primary"}`}
+                  >
+                    {inPortfolio ? <><Check size={12} /> Added</> : <><Plus size={12} /> Add</>}
+                  </button>
+                </div>
+                <div className="mt-2 flex items-center gap-3 pl-[calc(30px+0.75rem)]">
+                  <span className="dashboard-data text-sm tabular-nums">{formatNumber(company.latestHeadcount)}</span>
+                  <span className="dashboard-company-meta text-xs">employees</span>
+                  <span className={`dashboard-chip dashboard-chip-compact ${inPortfolio ? "dashboard-chip-positive" : "dashboard-chip-neutral"}`}>
+                    {inPortfolio ? "Tracked" : "Available"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
             <table className="dashboard-table companies-table w-full min-w-[720px] table-fixed text-sm">
                 <colgroup>
                   <col style={{ width: "48%" }} />
@@ -320,7 +362,7 @@ export default function CompaniesPage() {
                           tabIndex={0}
                         >
                           <div className="flex min-w-0 items-center gap-3">
-                            <CompanyLogo name={company.name} website={company.website} logoUrl={company.logoUrl} size={30} />
+                            <CompanyLogo id={company.id} name={company.name} size={30} />
                             <div className="min-w-0">
                               <div className="truncate dashboard-title text-[15px]">
                                 {company.name}
@@ -377,6 +419,7 @@ export default function CompaniesPage() {
                 </tbody>
             </table>
           </div>
+          </>
         )}
       </DataTableShell>
     </div>

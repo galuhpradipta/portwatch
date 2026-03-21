@@ -87,9 +87,9 @@ export default function CompanyDetailPage() {
       />
 
       <div className="companies-detail-shell radius-shell p-6 mb-6">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-4">
-            <CompanyLogo name={company.name} website={company.website} logoUrl={company.logoUrl} size={48} />
+            <CompanyLogo id={company.id} name={company.name} size={48} />
             <div>
               <p className="dashboard-kicker">Company brief</p>
               <h1 className="dashboard-title mt-1 text-2xl">{company.name}</h1>
@@ -121,7 +121,7 @@ export default function CompanyDetailPage() {
           <button
             onClick={togglePortfolio}
             disabled={loading}
-            className={`min-w-[14rem] ${
+            className={`w-full sm:w-auto sm:min-w-[14rem] ${
               inPortfolio ? "companies-action-secondary" : "companies-action-primary"
             }`}
           >
