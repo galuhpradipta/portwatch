@@ -6,21 +6,73 @@ import type { Env } from "../lib/env.ts";
 
 const STORAGE_PREFIX = "pw";
 
-function formatLogoId(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+type IconCandidate = { href: string; rel: string; sizes: string };
+
+function scoreCandidate(c: IconCandidate): number {
+  if (c.rel.includes("apple-touch-icon")) return 100;
+  const dim = parseInt(c.sizes.split("x")[0] ?? "0", 10);
+  if (dim >= 192) return 90;
+  if (dim >= 64) return 80;
+  if (dim > 0) return 70;
+  return 50;
 }
 
-function getDomain(website: string): string | null {
+async function scrapeIcon(
+  website: string,
+): Promise<{ buffer: ArrayBuffer; contentType: string } | null> {
+  const candidates: IconCandidate[] = [];
+
+  // Fetch homepage and collect <link> icon candidates via HTMLRewriter
+  let homeRes: Response;
   try {
-    return new URL(website).hostname.replace(/^www\./, "");
+    homeRes = await fetch(website, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; Portwatch/1.0; +https://portwatch.app)" },
+      redirect: "follow",
+    });
+    if (!homeRes.ok) return null;
   } catch {
     return null;
   }
-}
 
+  await new HTMLRewriter()
+    .on("link", {
+      element(el) {
+        const rel = el.getAttribute("rel") ?? "";
+        if (!rel.includes("icon")) return;
+        const href = el.getAttribute("href") ?? "";
+        if (!href) return;
+        candidates.push({ href, rel, sizes: el.getAttribute("sizes") ?? "" });
+      },
+    })
+    .transform(homeRes)
+    .arrayBuffer(); // consume stream
+
+  // Sort best candidate first
+  candidates.sort((a, b) => scoreCandidate(b) - scoreCandidate(a));
+
+  // Try each candidate, then /favicon.ico as final fallback
+  const base = new URL(website).origin;
+  const urls = [
+    ...candidates.map((c) => new URL(c.href, base).toString()),
+    `${base}/favicon.ico`,
+  ];
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const contentType = res.headers.get("Content-Type") ?? "image/png";
+      if (!contentType.startsWith("image/")) continue;
+      const buffer = await res.arrayBuffer();
+      if (buffer.byteLength < 100) continue;
+      return { buffer, contentType };
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+}
 
 export const logosRoutes = new Hono<{ Bindings: Env }>()
   .get("/:companyId", async (c) => {
@@ -48,37 +100,38 @@ export const logosRoutes = new Hono<{ Bindings: Env }>()
       .get();
     if (!company) return c.json({ error: "Not found" }, 404);
 
-    const domain = company.website ? getDomain(company.website) : null;
-
-    const sources: string[] = [];
-    if (company.logoUrl) sources.push(company.logoUrl);
-    if (domain) sources.push(`https://logo.clearbit.com/${domain}`);
-    sources.push(`https://logohub.dev/api/v1/logos/${formatLogoId(company.name)}`);
-
-    // 3. Try each source, cache first success
-    for (const url of sources) {
+    // 3. Try direct logoUrl from DB first
+    if (company.logoUrl) {
       try {
-        const res = await fetch(url);
-        if (!res.ok) continue;
+        const res = await fetch(company.logoUrl);
+        if (res.ok) {
+          const contentType = res.headers.get("Content-Type") ?? "image/png";
+          if (contentType.startsWith("image/")) {
+            const buffer = await res.arrayBuffer();
+            if (buffer.byteLength >= 100) {
+              await c.env.STORAGE.put(r2Key, buffer, { httpMetadata: { contentType } });
+              return new Response(buffer, {
+                headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=2592000" },
+              });
+            }
+          }
+        }
+      } catch { /* fall through */ }
+    }
 
-        const contentType = res.headers.get("Content-Type") ?? "image/png";
-        if (!contentType.startsWith("image/")) continue;
-
-        const buffer = await res.arrayBuffer();
-        if (buffer.byteLength < 100) continue; // skip blank/placeholder images
-
-        await c.env.STORAGE.put(r2Key, buffer, {
-          httpMetadata: { contentType },
+    // 4. Scrape from the company's own website
+    if (company.website) {
+      const result = await scrapeIcon(company.website);
+      if (result) {
+        await c.env.STORAGE.put(r2Key, result.buffer, {
+          httpMetadata: { contentType: result.contentType },
         });
-
-        return new Response(buffer, {
+        return new Response(result.buffer, {
           headers: {
-            "Content-Type": contentType,
+            "Content-Type": result.contentType,
             "Cache-Control": "public, max-age=2592000",
           },
         });
-      } catch {
-        continue;
       }
     }
 
