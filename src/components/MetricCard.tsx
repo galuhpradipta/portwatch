@@ -11,7 +11,7 @@ export default function MetricCard({ children, className, primary = false }: Pro
   return (
     <div
       className={joinClassNames(
-        "dashboard-metric dashboard-metric-compact surface-square",
+        "dashboard-metric dashboard-metric-compact",
         primary && "dashboard-metric-primary",
         className,
       )}

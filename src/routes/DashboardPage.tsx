@@ -125,7 +125,7 @@ export default function DashboardPage() {
         <button
           onClick={handleRefresh}
           disabled={refreshing || portfolio.length === 0}
-          className="dashboard-action surface-square flex items-center gap-2 px-4 py-2 text-sm"
+          className="dashboard-action flex items-center gap-2 px-4 py-2 text-sm"
         >
           <ArrowsClockwise size={16} className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Refreshing..." : "Refresh All"}
@@ -134,7 +134,7 @@ export default function DashboardPage() {
 
       {portfolio.length === 0 ? (
         <PageSectionShell className="dashboard-empty-state p-10 md:p-12">
-          <div className="dashboard-empty-icon surface-square mx-auto mb-5 flex h-20 w-20 items-center justify-center">
+          <div className="dashboard-empty-icon mx-auto mb-5 flex h-20 w-20 items-center justify-center" style={{ borderRadius: 'var(--radius-icon)' }}>
             <Buildings size={36} />
           </div>
           <p className="dashboard-kicker">Portfolio status</p>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
           </p>
           <button
             onClick={() => navigate("/companies")}
-            className="dashboard-action surface-square mt-6 px-4 py-2 text-sm"
+            className="dashboard-action mt-6 px-4 py-2 text-sm"
           >
             Browse Companies
           </button>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
                     >
                       <td className="px-5 py-4 align-top">
                         <div className="flex min-w-0 items-center gap-3">
-                          <CompanyLogo name={company.name} website={company.website} size={32} />
+                          <CompanyLogo name={company.name} website={company.website} logoUrl={company.logoUrl} size={32} />
                           <div className="min-w-0">
                             <div className="truncate dashboard-title text-base">
                               {company.name}
@@ -324,13 +324,13 @@ function SummaryStats({
         </div>
 
         <div className="mt-4 flex flex-wrap gap-1.5">
-          <span className={headcountAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-negative surface-square" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square"}>
+          <span className={headcountAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-negative" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"}>
             {headcountAlertCount} headcount
           </span>
-          <span className={sentimentAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-caution surface-square" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square"}>
+          <span className={sentimentAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-caution" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"}>
             {sentimentAlertCount} sentiment
           </span>
-          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square">
+          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral">
             {alertsActive ? "Monitoring" : "Idle"}
           </span>
         </div>
@@ -350,7 +350,7 @@ function SummaryStats({
             <div className="dashboard-data text-3xl font-semibold">{count}</div>
             <div className="dashboard-copy mt-1 text-xs">of {PORTFOLIO_LIMIT} slots</div>
           </div>
-          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square">
+          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral">
             {utilization}% full
           </span>
         </div>
@@ -409,12 +409,12 @@ function SummaryStats({
           <span
             className={
               avgSentiment === null
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-neutral surface-square"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"
                 : avgSentiment <= 40
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-positive surface-square"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-positive"
                 : avgSentiment <= 70
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-warning surface-square"
-                : "dashboard-chip dashboard-chip-compact dashboard-chip-negative surface-square"
+                ? "dashboard-chip dashboard-chip-compact dashboard-chip-warning"
+                : "dashboard-chip dashboard-chip-compact dashboard-chip-negative"
             }
           >
             {sentimentState.label}
@@ -449,8 +449,8 @@ function ChangePill({ pct }: { pct: number | null }) {
     <span
       className={
         isPositive
-          ? "dashboard-chip dashboard-chip-positive surface-square ml-auto"
-          : "dashboard-chip dashboard-chip-negative surface-square ml-auto"
+          ? "dashboard-chip dashboard-chip-positive ml-auto"
+          : "dashboard-chip dashboard-chip-negative ml-auto"
       }
     >
       {isPositive ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
@@ -484,20 +484,20 @@ function AlertBadges({
 }) {
   if (!hasHeadcountAlert && !hasSentimentAlert)
     return (
-      <span className="dashboard-chip dashboard-chip-neutral surface-square ml-auto">
+      <span className="dashboard-chip dashboard-chip-neutral ml-auto">
         Clear
       </span>
     );
   return (
     <div className="ml-auto flex flex-wrap justify-end gap-1">
       {hasHeadcountAlert && (
-        <span className="dashboard-chip dashboard-chip-negative surface-square">
+        <span className="dashboard-chip dashboard-chip-negative">
           <ArrowDown size={9} />
           HC
         </span>
       )}
       {hasSentimentAlert && (
-        <span className="dashboard-chip dashboard-chip-caution surface-square">
+        <span className="dashboard-chip dashboard-chip-caution">
           <Pulse size={9} />
           NEG
         </span>

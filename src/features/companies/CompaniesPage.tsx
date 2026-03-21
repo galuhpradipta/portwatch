@@ -195,7 +195,7 @@ export default function CompaniesPage() {
                 placeholder="Search company or industry"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                className="companies-compact-control companies-compact-search surface-square"
+                className="companies-compact-control companies-compact-search"
               />
             </label>
 
@@ -207,7 +207,7 @@ export default function CompaniesPage() {
               <select
                 value={industryFilter}
                 onChange={(event) => setIndustryFilter(event.target.value)}
-                className="companies-compact-control companies-compact-select surface-square"
+                className="companies-compact-control companies-compact-select"
               >
                 <option value="">All industries</option>
                 {industries.map((industry) => (
@@ -226,7 +226,7 @@ export default function CompaniesPage() {
               <select
                 value={countryFilter}
                 onChange={(event) => setCountryFilter(event.target.value)}
-                className="companies-compact-control companies-compact-select surface-square"
+                className="companies-compact-control companies-compact-select"
               >
                 <option value="">All countries</option>
                 {countries.map((country) => (
@@ -242,7 +242,7 @@ export default function CompaniesPage() {
 
         {filtered.length === 0 ? (
           <div className="dashboard-panel dashboard-empty-state companies-empty-panel px-6 py-10 md:px-10 md:py-12">
-            <div className="dashboard-empty-icon companies-empty-icon-compact surface-square mx-auto mb-5 flex items-center justify-center">
+            <div className="dashboard-empty-icon companies-empty-icon-compact mx-auto mb-5 flex items-center justify-center">
               <Buildings size={34} />
             </div>
             <p className="dashboard-kicker">No match</p>
@@ -303,7 +303,7 @@ export default function CompaniesPage() {
                           onClick={() => navigate(`/companies/${company.id}`)}
                         >
                           <div className="flex min-w-0 items-center gap-3">
-                            <CompanyLogo name={company.name} website={company.website} size={30} />
+                            <CompanyLogo name={company.name} website={company.website} logoUrl={company.logoUrl} size={30} />
                             <div className="min-w-0">
                               <div className="truncate dashboard-title text-[15px]">
                                 {company.name}
@@ -323,7 +323,7 @@ export default function CompaniesPage() {
 
                         <td className="px-4 py-3 text-right align-middle md:px-5">
                           <span
-                            className={`dashboard-chip dashboard-chip-compact surface-square ${
+                            className={`dashboard-chip dashboard-chip-compact ${
                               inPortfolio
                                 ? "dashboard-chip-positive"
                                 : "dashboard-chip-neutral"
@@ -337,7 +337,7 @@ export default function CompaniesPage() {
                           <button
                             onClick={() => togglePortfolio(company.id)}
                             disabled={isLoading}
-                            className={`companies-inline-action surface-square ${
+                            className={`companies-inline-action ${
                               inPortfolio
                                 ? "companies-inline-action-secondary"
                                 : "companies-inline-action-primary"

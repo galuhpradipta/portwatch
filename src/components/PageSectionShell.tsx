@@ -8,7 +8,7 @@ type Props = {
 
 export default function PageSectionShell({ children, className }: Props) {
   return (
-    <section className={joinClassNames("dashboard-shell dashboard-panel surface-square", className)}>
+    <section className={joinClassNames("dashboard-shell dashboard-panel", className)}>
       {children}
     </section>
   );

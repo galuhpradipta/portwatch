@@ -21,7 +21,7 @@ export default function DataTableShell({
   bodyClassName,
 }: Props) {
   return (
-    <div className={joinClassNames("dashboard-shell surface-square overflow-hidden", className)}>
+    <div className={joinClassNames("dashboard-shell overflow-hidden", className)}>
       <div className="dashboard-table-topbar dashboard-table-topbar-compact px-4 py-4 md:px-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

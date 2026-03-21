@@ -85,7 +85,7 @@ export default function SettingsPage() {
                 type="text"
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
-                className="settings-input surface-square"
+                className="settings-input"
               />
             </Field.Root>
 
@@ -95,7 +95,7 @@ export default function SettingsPage() {
                 type="email"
                 value={me.email}
                 disabled
-                className="settings-input settings-input-readonly surface-square"
+                className="settings-input settings-input-readonly"
               />
             </Field.Root>
           </div>
@@ -112,7 +112,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
             <Field.Root>
               <Field.Label className="settings-label">Headcount Drop Threshold</Field.Label>
-              <div className="settings-input-wrap surface-square">
+              <div className="settings-input-wrap">
                 <Field.Control
                   type="number"
                   inputMode="numeric"
@@ -129,13 +129,13 @@ export default function SettingsPage() {
                       setThresholdInput(String(threshold));
                     }
                   }}
-                  className="settings-input settings-input-with-suffix surface-square"
+                  className="settings-input settings-input-with-suffix"
                 />
                 <span className="settings-input-suffix">%</span>
               </div>
             </Field.Root>
 
-            <div className="settings-threshold-note surface-square">
+            <div className="settings-threshold-note">
               <span className="dashboard-kicker">Allowed range</span>
               <span className="dashboard-data mt-2 text-lg">
                 {threshold ?? "—"}%
@@ -157,7 +157,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSave}
               disabled={saving || threshold === null}
-              className="dashboard-action settings-save-action surface-square px-4 py-2 text-sm"
+              className="dashboard-action settings-save-action px-4 py-2 text-sm"
             >
               {saving ? "Saving..." : saved ? "Saved!" : "Save Changes"}
             </button>
