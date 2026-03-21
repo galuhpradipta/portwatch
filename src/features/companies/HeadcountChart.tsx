@@ -31,27 +31,27 @@ export default function HeadcountChart({ snapshots }: { snapshots: HeadcountSnap
   return (
     <ResponsiveContainer width="100%" height={320}>
       <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
         <XAxis
           dataKey="month"
-          tick={{ fill: "#8b929e", fontSize: 11 }}
+          tick={{ fill: "#5f6878", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
           tickFormatter={formatYAxis}
-          tick={{ fill: "#8b929e", fontSize: 11 }}
+          tick={{ fill: "#5f6878", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           width={40}
         />
         <Tooltip
           contentStyle={{
-            background: "#242836",
-            border: "1px solid #2a2e3d",
+            background: "#ffffff",
+            border: "1px solid #d8dce6",
             borderRadius: "8px",
-            color: "#e8eaed",
+            color: "#1a1d27",
             fontSize: 12,
           }}
           formatter={(value) => [(value as number).toLocaleString(), "Headcount"]}
@@ -59,7 +59,7 @@ export default function HeadcountChart({ snapshots }: { snapshots: HeadcountSnap
         <Line
           type="monotone"
           dataKey="headcount"
-          stroke="#4a8eff"
+          stroke="#2563eb"
           strokeWidth={2}
           dot={false}
           activeDot={{ r: 4, strokeWidth: 0 }}

@@ -24,7 +24,7 @@ export default function ConfirmDialog({
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialog.Portal>
-        <AlertDialog.Backdrop className="animate-overlay-fade-in fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+        <AlertDialog.Backdrop className="animate-overlay-fade-in fixed inset-0 z-50 bg-black/30 backdrop-blur-sm" />
         <AlertDialog.Popup className="card-panel fixed left-1/2 top-1/2 z-50 w-[min(90vw,380px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl p-6 shadow-xl">
           <AlertDialog.Title className="font-bold text-lg text-app-text mb-2">
             {title}
