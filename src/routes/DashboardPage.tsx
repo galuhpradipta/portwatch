@@ -1,7 +1,8 @@
 import { useLoaderData, useNavigate, useRevalidator } from "react-router";
 import { useState, type ReactNode } from "react";
 import {
-  ArrowsClockwise,
+  CloudArrowDown,
+  Check,
   ArrowUp,
   ArrowDown,
   Buildings,
@@ -19,6 +20,19 @@ import DataTableShell from "../components/DataTableShell.tsx";
 
 type SortKey = "name" | "headcount" | "change" | "sentiment";
 type SortDir = "asc" | "desc";
+
+type SimStep = { label: string; type: "scan" | "headcount" | "sentiment" | "done" };
+type SimState = { steps: SimStep[]; currentIndex: number; exiting: boolean };
+
+function buildSimSteps(companies: PortfolioCompany[]): SimStep[] {
+  const steps: SimStep[] = [{ label: "Scanning portfolio...", type: "scan" }];
+  for (const c of companies) {
+    steps.push({ label: `Fetching ${c.name} headcount...`, type: "headcount" });
+    steps.push({ label: `Analyzing ${c.name} sentiment...`, type: "sentiment" });
+  }
+  steps.push({ label: "Portfolio refresh complete!", type: "done" });
+  return steps;
+}
 
 function formatNumber(n: number | null): string {
   if (n === null) return "—";
@@ -67,18 +81,41 @@ export default function DashboardPage() {
   const api = useApi();
   const navigate = useNavigate();
 
-  const [refreshing, setRefreshing] = useState(false);
+  const [sim, setSim] = useState<SimState | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  async function handleRefresh() {
-    setRefreshing(true);
-    try {
-      await api.post("/portfolio/check", {});
-      revalidate();
-    } finally {
-      setRefreshing(false);
-    }
+  async function handlePullData() {
+    if (sim || portfolio.length === 0) return;
+    const steps = buildSimSteps(portfolio);
+    const stepDuration = Math.min(300, Math.max(80, 2500 / steps.length));
+
+    setSim({ steps, currentIndex: 0, exiting: false });
+
+    const apiPromise = api.post("/portfolio/check", {}).catch(() => {});
+
+    const stepsPromise = new Promise<void>((resolve) => {
+      let idx = 0;
+      const timer = setInterval(() => {
+        idx++;
+        if (idx >= steps.length - 1) {
+          clearInterval(timer);
+          setSim((prev) => (prev ? { ...prev, currentIndex: steps.length - 1 } : null));
+          resolve();
+        } else {
+          setSim((prev) => (prev ? { ...prev, currentIndex: idx } : null));
+        }
+      }, stepDuration);
+    });
+
+    await Promise.all([apiPromise, stepsPromise]);
+    await new Promise<void>((resolve) => setTimeout(resolve, 400));
+
+    setSim((prev) => (prev ? { ...prev, exiting: true } : null));
+    await new Promise<void>((resolve) => setTimeout(resolve, 300));
+
+    revalidate();
+    setSim(null);
   }
 
   function handleSort(key: SortKey) {
@@ -124,13 +161,13 @@ export default function DashboardPage() {
           </p>
         </div>
         <button
-          onClick={handleRefresh}
-          disabled={refreshing || portfolio.length === 0}
-          aria-busy={refreshing}
+          onClick={handlePullData}
+          disabled={!!sim || portfolio.length === 0}
+          aria-busy={!!sim}
           className="dashboard-action flex items-center gap-2 px-4 py-2 text-sm"
         >
-          <ArrowsClockwise size={16} aria-hidden="true" className={refreshing ? "animate-spin" : ""} />
-          {refreshing ? "Refreshing..." : "Refresh All"}
+          <CloudArrowDown size={16} aria-hidden="true" className={sim ? "animate-pulse" : ""} />
+          {sim ? "Pulling data..." : "Pull Latest Data"}
         </button>
       </div>
 
@@ -154,15 +191,20 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* Zone 1: Summary Stats */}
-          <SummaryStats
-            count={portfolio.length}
-            totalHeadcount={totalHeadcount}
-            headcountCoverageCount={companiesWithHeadcount}
-            avgSentiment={avgSentiment}
-            activeAlerts={activeAlerts.length}
-            headcountAlertCount={headcountAlertCount}
-            sentimentAlertCount={sentimentAlertCount}
-          />
+          <div
+            className={sim ? "simulation-dimmed" : "sim-stats-wrapper"}
+            style={{ transition: "opacity 300ms ease, filter 300ms ease" }}
+          >
+            <SummaryStats
+              count={portfolio.length}
+              totalHeadcount={totalHeadcount}
+              headcountCoverageCount={companiesWithHeadcount}
+              avgSentiment={avgSentiment}
+              activeAlerts={activeAlerts.length}
+              headcountAlertCount={headcountAlertCount}
+              sentimentAlertCount={sentimentAlertCount}
+            />
+          </div>
 
           {/* Zone 2: Enhanced Portfolio Table */}
           <DataTableShell
@@ -181,6 +223,8 @@ export default function DashboardPage() {
             }
             helper={<span className="hidden md:inline">Click a header to sort</span>}
           >
+            <div className="relative">
+            {sim && <SimulationOverlay sim={sim} />}
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-app-border-subtle">
               {sorted.map((company, index) => (
@@ -319,9 +363,57 @@ export default function DashboardPage() {
                 </tbody>
               </table>
             </div>
+            </div>
           </DataTableShell>
         </>
       )}
+    </div>
+  );
+}
+
+function SimulationOverlay({ sim }: { sim: SimState }) {
+  const { steps, currentIndex, exiting } = sim;
+  const progress = steps.length > 1 ? (currentIndex / (steps.length - 1)) * 100 : 100;
+  const currentStep = steps[currentIndex];
+  const completedSteps = steps.slice(0, currentIndex).reverse().slice(0, 4);
+
+  return (
+    <div
+      className={`simulation-overlay${exiting ? " simulation-overlay-exit" : ""}`}
+      role="status"
+      aria-live="polite"
+      aria-label="Pulling latest portfolio data"
+    >
+      <div className="simulation-progress">
+        <div className="simulation-progress-fill" style={{ width: `${progress}%` }} />
+      </div>
+
+      <div className="simulation-content">
+        {currentStep && (
+          <div key={currentStep.label} className="simulation-active-step">
+            <span
+              className={`simulation-dot${currentStep.type === "done" ? " simulation-dot-done" : ""}`}
+              aria-hidden="true"
+            />
+            <span className="simulation-step-text">{currentStep.label}</span>
+          </div>
+        )}
+
+        {completedSteps.length > 0 && (
+          <div className="simulation-completed-list" aria-hidden="true">
+            {completedSteps.map((step, i) => (
+              <div
+                key={step.label}
+                className="simulation-completed-item"
+                style={{ opacity: Math.max(0.25, 1 - i * 0.2) }}
+              >
+                <Check size={12} className="simulation-check" aria-hidden="true" />
+                <span>{step.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
