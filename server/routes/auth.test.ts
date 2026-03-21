@@ -1,17 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
 import Database from "better-sqlite3";
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { fileURLToPath } from "url";
 import { resolve, dirname } from "path";
 import { authRoutes } from "./auth.ts";
 import type { Env } from "../lib/env.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const MIGRATION_SQL = readFileSync(
-  resolve(__dirname, "../../drizzle/migrations/0001_initial.sql"),
-  "utf-8",
-);
+const MIGRATION_SQL = readdirSync(resolve(__dirname, "../../drizzle/migrations"))
+  .filter((file) => file.endsWith(".sql"))
+  .sort()
+  .map((file) => readFileSync(resolve(__dirname, `../../drizzle/migrations/${file}`), "utf-8"))
+  .join("\n");
 
 const TEST_JWT_SECRET = "test-jwt-secret-for-integration-tests";
 

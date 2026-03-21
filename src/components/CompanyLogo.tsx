@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { LogoStatus } from "../shared/types.ts";
 
 function getInitials(name: string) {
   return name
@@ -21,25 +22,40 @@ function pickColor(name: string) {
 }
 
 type Props = {
-  id: string;
   name: string;
+  logoStatus: LogoStatus;
+  logoSrc: string;
   size?: number;
   className?: string;
+  priority?: boolean;
 };
 
-export default function CompanyLogo({ id, name, size = 32, className = "" }: Props) {
+export default function CompanyLogo({
+  name,
+  logoStatus,
+  logoSrc,
+  size = 32,
+  className = "",
+  priority = false,
+}: Props) {
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [logoSrc, logoStatus]);
 
   const base = `flex-shrink-0 rounded-lg overflow-hidden ${className}`;
 
-  if (!failed) {
+  if (logoStatus === "ready" && logoSrc && !failed) {
     return (
       <img
-        src={`/api/logos/${id}`}
+        src={logoSrc}
         alt={`${name} logo`}
         width={size}
         height={size}
-        loading="lazy"
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
         style={{ width: size, height: size }}
         className={`${base} object-contain bg-white p-0.5`}
         onError={() => setFailed(true)}

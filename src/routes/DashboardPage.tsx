@@ -1,5 +1,5 @@
 import { useLoaderData, useNavigate, useRevalidator } from "react-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ArrowsClockwise,
   ArrowUp,
@@ -28,10 +28,9 @@ function formatNumber(n: number | null): string {
 function getSentimentState(score: number | null) {
   if (score === null) {
     return {
-      label: "No reading",
+      label: "No signal",
       tone: "text-app-text-muted",
       bar: "bg-app-text-dim",
-      fill: "bg-app-border",
     };
   }
 
@@ -40,16 +39,14 @@ function getSentimentState(score: number | null) {
       label: "Calm",
       tone: "text-app-green",
       bar: "bg-app-green",
-      fill: "bg-app-green",
     };
   }
 
   if (score <= 70) {
     return {
-      label: "Mixed",
+      label: "Watch",
       tone: "text-app-yellow",
       bar: "bg-app-yellow",
-      fill: "bg-app-yellow",
     };
   }
 
@@ -57,8 +54,11 @@ function getSentimentState(score: number | null) {
     label: "Stressed",
     tone: "text-app-red",
     bar: "bg-app-red",
-    fill: "bg-app-red",
   };
+}
+
+function formatCount(count: number, singular: string, plural = `${singular}s`) {
+  return `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
 }
 
 export default function DashboardPage() {
@@ -100,6 +100,7 @@ export default function DashboardPage() {
   });
 
   const totalHeadcount = portfolio.reduce((sum, c) => sum + (c.latestHeadcount ?? 0), 0);
+  const companiesWithHeadcount = portfolio.filter((c) => c.latestHeadcount !== null).length;
   const sentimentScores = portfolio
     .filter((c) => c.avgSentimentScore !== null)
     .map((c) => c.avgSentimentScore as number);
@@ -119,7 +120,7 @@ export default function DashboardPage() {
           <p className="dashboard-kicker">Portfolio control room</p>
           <h1 className="dashboard-title text-2xl">Portfolio</h1>
           <p className="dashboard-copy text-sm">
-            {portfolio.length} / {PORTFOLIO_LIMIT} companies tracked
+            Staffing and recent press signals across your tracked companies.
           </p>
         </div>
         <button
@@ -156,6 +157,7 @@ export default function DashboardPage() {
           <SummaryStats
             count={portfolio.length}
             totalHeadcount={totalHeadcount}
+            headcountCoverageCount={companiesWithHeadcount}
             avgSentiment={avgSentiment}
             activeAlerts={activeAlerts.length}
             headcountAlertCount={headcountAlertCount}
@@ -181,7 +183,7 @@ export default function DashboardPage() {
           >
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-app-border-subtle">
-              {sorted.map((company) => (
+              {sorted.map((company, index) => (
                 <div
                   key={company.id}
                   className="dashboard-table-row group cursor-pointer px-4 py-4"
@@ -191,7 +193,13 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
-                      <CompanyLogo id={company.id} name={company.name} size={32} />
+                      <CompanyLogo
+                        name={company.name}
+                        logoStatus={company.logoStatus}
+                        logoSrc={company.logoSrc}
+                        size={32}
+                        priority={index < 6}
+                      />
                       <div className="min-w-0">
                         <div className="truncate dashboard-title text-base">{company.name}</div>
                         <div className="dashboard-company-meta mt-0.5">{company.industry} · {company.country}</div>
@@ -262,7 +270,7 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sorted.map((company) => (
+                  {sorted.map((company, index) => (
                     <tr
                       key={company.id}
                       className="dashboard-table-row group cursor-pointer"
@@ -272,7 +280,13 @@ export default function DashboardPage() {
                     >
                       <td className="px-5 py-4 align-top">
                         <div className="flex min-w-0 items-center gap-3">
-                          <CompanyLogo id={company.id} name={company.name} size={32} />
+                          <CompanyLogo
+                            name={company.name}
+                            logoStatus={company.logoStatus}
+                            logoSrc={company.logoSrc}
+                            size={32}
+                            priority={index < 6}
+                          />
                           <div className="min-w-0">
                             <div className="truncate dashboard-title text-base">
                               {company.name}
@@ -315,6 +329,7 @@ export default function DashboardPage() {
 function SummaryStats({
   count,
   totalHeadcount,
+  headcountCoverageCount,
   avgSentiment,
   activeAlerts,
   headcountAlertCount,
@@ -322,181 +337,198 @@ function SummaryStats({
 }: {
   count: number;
   totalHeadcount: number;
+  headcountCoverageCount: number;
   avgSentiment: number | null;
   activeAlerts: number;
   headcountAlertCount: number;
   sentimentAlertCount: number;
 }) {
   const sentimentState = getSentimentState(avgSentiment);
-  const utilization = Math.round((count / PORTFOLIO_LIMIT) * 100);
-  const avgPerCompany = count > 0 ? Math.round(totalHeadcount / count) : null;
+  const avgPerCompany =
+    headcountCoverageCount > 0 ? Math.round(totalHeadcount / headcountCoverageCount) : null;
   const alertsActive = activeAlerts > 0;
-  const affectedShare = count > 0 ? Math.round((activeAlerts / count) * 100) : 0;
+  const slotsOpen = Math.max(PORTFOLIO_LIMIT - count, 0);
+  const watchlistSummary =
+    slotsOpen === 0 ? "Watchlist is full." : slotsOpen === 1 ? "1 slot open." : `${slotsOpen} slots open.`;
+  const headcountSummary =
+    avgPerCompany !== null
+      ? `Average ${formatNumber(avgPerCompany)} per company.`
+      : "Headcount data is still coming in.";
+  const sentimentSummary =
+    avgSentiment !== null
+      ? `${sentimentState.label} range. Higher scores indicate more risk.`
+      : "No recent press signal yet.";
 
   return (
     <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-      <MetricCard primary className="animate-fade-in-up animate-stagger-1">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="dashboard-kicker">Live risk</p>
-            <h2 className="dashboard-copy mt-1 text-xs font-medium">Threat level</h2>
-          </div>
+      <SummaryMetric
+        title="Alerts"
+        icon={
           <Warning
             size={16}
             weight={alertsActive ? "fill" : "regular"}
             className={alertsActive ? "text-app-red" : "text-app-text-dim"}
           />
-        </div>
-
-        <div className="mt-4 flex items-end justify-between gap-3">
-          <div
-            className={`dashboard-data text-3xl font-semibold ${
-              alertsActive ? "text-app-red" : "text-app-text"
-            }`}
-          >
-            {activeAlerts}
+        }
+        value={
+          <div className="dashboard-summary-value-group">
+            <span className={`dashboard-summary-value ${alertsActive ? "text-app-red" : ""}`}>
+              {activeAlerts}
+            </span>
+            <span className="dashboard-summary-value-note">
+              {activeAlerts === 1 ? "company needs review" : "companies need review"}
+            </span>
           </div>
-          <div className="text-right">
-            <div
-              className={`dashboard-kicker ${alertsActive ? "text-app-red/80" : "text-app-text-dim"} text-[9px]`}
-            >
-              {alertsActive ? "Alerts open" : "Clear"}
-            </div>
-            <div className="dashboard-copy mt-1 text-xs">
-              {affectedShare}% affected
-            </div>
-          </div>
-        </div>
+        }
+        description={
+          alertsActive
+            ? "Review headcount drops and negative press coverage."
+            : "All tracked companies are clear right now."
+        }
+        footer={
+          <>
+            <span>{formatCount(headcountAlertCount, "headcount drop")}</span>
+            <span>{formatCount(sentimentAlertCount, "negative press signal")}</span>
+          </>
+        }
+        emphasized
+        className="animate-fade-in-up animate-stagger-1"
+      />
 
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          <span className={headcountAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-negative" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"}>
-            {headcountAlertCount} headcount
+      <SummaryMetric
+        title="Watchlist capacity"
+        icon={<Buildings size={16} className="text-app-text-dim" />}
+        value={
+          <div className="dashboard-summary-value-group">
+            <span className="dashboard-summary-value">
+              {count} / {PORTFOLIO_LIMIT}
+            </span>
+          </div>
+        }
+        description={watchlistSummary}
+        footer={
+          <>
+            <span>{formatCount(count, "company tracked", "companies tracked")}</span>
+            <span>{formatCount(slotsOpen, "slot open", "slots open")}</span>
+          </>
+        }
+        className="animate-fade-in-up animate-stagger-2"
+      />
+
+      <SummaryMetric
+        title="Portfolio headcount"
+        icon={<Users size={16} className="text-app-text-dim" />}
+        value={
+          <div className="dashboard-summary-value-group">
+            <span className="dashboard-summary-value">
+              {totalHeadcount > 0 ? totalHeadcount.toLocaleString() : "—"}
+            </span>
+          </div>
+        }
+        description={headcountSummary}
+        footer={
+          <span>
+            {headcountCoverageCount === count
+              ? `Across ${formatCount(count, "tracked company", "tracked companies")}`
+              : `Data from ${headcountCoverageCount.toLocaleString()} of ${count.toLocaleString()} companies`}
           </span>
-          <span className={sentimentAlertCount > 0 ? "dashboard-chip dashboard-chip-compact dashboard-chip-caution" : "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"}>
-            {sentimentAlertCount} sentiment
-          </span>
-          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral">
-            {alertsActive ? "Monitoring" : "Idle"}
-          </span>
-        </div>
-      </MetricCard>
+        }
+        className="animate-fade-in-up animate-stagger-3"
+      />
 
-      <MetricCard className="animate-fade-in-up animate-stagger-2">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="dashboard-kicker">Portfolio</p>
-            <h2 className="dashboard-copy mt-1 text-xs font-medium">Tracked companies</h2>
-          </div>
-          <Buildings size={16} className="text-app-text-dim" />
-        </div>
-
-        <div className="mt-4 flex items-end justify-between gap-3">
-          <div>
-            <div className="dashboard-data text-3xl font-semibold">{count}</div>
-            <div className="dashboard-copy mt-1 text-xs">of {PORTFOLIO_LIMIT} slots</div>
-          </div>
-          <span className="dashboard-chip dashboard-chip-compact dashboard-chip-neutral">
-            {utilization}% full
-          </span>
-        </div>
-
-        <div className="mt-3 space-y-1.5">
-          <div
-            className="dashboard-progress-track h-2 overflow-hidden bg-app-border"
-            role="progressbar"
-            aria-valuenow={utilization}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={`Portfolio utilization: ${utilization}%`}
-          >
-            <div
-              className="dashboard-progress-fill h-full bg-[linear-gradient(90deg,var(--color-app-accent-dim),var(--color-app-accent))]"
-              style={{ width: `${utilization}%` }}
-            />
-          </div>
-          <div className="dashboard-metric-meta">
-            <span>Utilization</span>
-            <span className="dashboard-data-muted">{utilization}%</span>
-          </div>
-        </div>
-      </MetricCard>
-
-      <MetricCard className="animate-fade-in-up animate-stagger-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="dashboard-kicker">Total headcount</p>
-            <h2 className="dashboard-copy mt-1 text-xs font-medium">Across all companies</h2>
-          </div>
-          <Users size={16} className="text-app-accent/50" />
-        </div>
-
-        <div className="dashboard-data mt-4 text-3xl font-semibold">
-          {totalHeadcount > 0 ? totalHeadcount.toLocaleString() : "—"}
-        </div>
-
-        <div className="dashboard-metric-meta mt-3">
-          <span>Average per company</span>
-          <span className="dashboard-data-muted">
-            {avgPerCompany !== null ? avgPerCompany.toLocaleString() : "No data"}
-          </span>
-        </div>
-      </MetricCard>
-
-      <MetricCard className="animate-fade-in-up animate-stagger-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="dashboard-kicker">Avg sentiment</p>
-            <h2 className="dashboard-copy mt-1 text-xs font-medium">Signal health</h2>
-          </div>
+      <SummaryMetric
+        title="Negative press score"
+        icon={
           <Pulse
             size={16}
             className={avgSentiment !== null ? sentimentState.tone : "text-app-text-dim"}
           />
-        </div>
-
-        <div className="mt-4 flex items-end justify-between gap-3">
-          <div className={`dashboard-data text-3xl font-semibold ${sentimentState.tone}`}>
-            {avgSentiment !== null ? avgSentiment.toFixed(0) : "—"}
+        }
+        value={
+          <div className="dashboard-summary-value-group">
+            <span className={`dashboard-summary-value ${sentimentState.tone}`}>
+              {avgSentiment !== null ? avgSentiment.toFixed(0) : "—"}
+            </span>
+            {avgSentiment !== null ? <span className="dashboard-summary-value-note">/ 100</span> : null}
           </div>
-          <span
-            className={
-              avgSentiment === null
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-neutral"
-                : avgSentiment <= 40
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-positive"
-                : avgSentiment <= 70
-                ? "dashboard-chip dashboard-chip-compact dashboard-chip-warning"
-                : "dashboard-chip dashboard-chip-compact dashboard-chip-negative"
+        }
+        description={sentimentSummary}
+        footer={
+          <SentimentScale
+            activeLabel={sentimentState.label}
+            ariaLabel={
+              avgSentiment !== null
+                ? `Negative press score ${Math.round(avgSentiment)} in the ${sentimentState.label} range. Higher scores indicate more risk.`
+                : "Negative press score unavailable. Thresholds are 0 to 40 calm, 41 to 70 watch, and 71 to 100 stressed."
             }
-          >
-            {sentimentState.label}
+          />
+        }
+        className="animate-fade-in-up animate-stagger-4"
+      />
+    </div>
+  );
+}
+
+function SummaryMetric({
+  title,
+  icon,
+  value,
+  description,
+  footer,
+  emphasized = false,
+  className,
+}: {
+  title: string;
+  icon: ReactNode;
+  value: ReactNode;
+  description: string;
+  footer: ReactNode;
+  emphasized?: boolean;
+  className?: string;
+}) {
+  return (
+    <MetricCard primary={emphasized} className={className}>
+      <div className="dashboard-summary-card">
+        <div className="dashboard-summary-head">
+          <h2 className="dashboard-summary-title">{title}</h2>
+          <span className="dashboard-summary-icon" aria-hidden="true">
+            {icon}
           </span>
         </div>
+        {value}
+        <p className="dashboard-summary-copy">{description}</p>
+        <div className="dashboard-summary-foot">{footer}</div>
+      </div>
+    </MetricCard>
+  );
+}
 
-        <div className="mt-3 space-y-1.5">
-          {avgSentiment !== null && (
-            <div
-              className="dashboard-progress-track h-2 overflow-hidden bg-app-border"
-              role="progressbar"
-              aria-valuenow={Math.round(avgSentiment)}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Average sentiment: ${sentimentState.label}`}
-            >
-              <div
-                className={`dashboard-progress-fill h-full transition-all ${sentimentState.fill}`}
-                style={{ width: `${avgSentiment}%` }}
-              />
-            </div>
-          )}
-          <div className="dashboard-metric-meta">
-            <span>Quality band</span>
-            <span className={avgSentiment === null ? "dashboard-data-muted" : sentimentState.tone}>
-              {sentimentState.label}
-            </span>
-          </div>
-        </div>
-      </MetricCard>
+function SentimentScale({
+  activeLabel,
+  ariaLabel,
+}: {
+  activeLabel: string;
+  ariaLabel: string;
+}) {
+  return (
+    <div className="dashboard-sentiment-scale" role="img" aria-label={ariaLabel}>
+      {[
+        { label: "Calm", range: "0-40" },
+        { label: "Watch", range: "41-70" },
+        { label: "Stressed", range: "71-100" },
+      ].map((item) => (
+        <span
+          key={item.label}
+          className={`dashboard-sentiment-scale-item ${
+            activeLabel === item.label
+              ? `dashboard-sentiment-scale-item-active dashboard-sentiment-scale-item-${item.label.toLowerCase()}`
+              : ""
+          }`}
+        >
+          <span>{item.range}</span>
+          <span>{item.label}</span>
+        </span>
+      ))}
     </div>
   );
 }

@@ -315,7 +315,7 @@ export default function CompaniesPage() {
           <>
           {/* Mobile card list */}
         <div className="md:hidden divide-y divide-app-border-subtle">
-          {paginated.map((company) => {
+          {paginated.map((company, index) => {
             const inPortfolio = portfolioIds.has(company.id);
             const isLoading = loading === company.id;
             return (
@@ -327,7 +327,13 @@ export default function CompaniesPage() {
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/companies/${company.id}`); } }}
                     tabIndex={0}
                   >
-                    <CompanyLogo id={company.id} name={company.name} size={30} />
+                    <CompanyLogo
+                      name={company.name}
+                      logoStatus={company.logoStatus}
+                      logoSrc={company.logoSrc}
+                      size={30}
+                      priority={index < 6}
+                    />
                     <div className="min-w-0">
                       <div className="truncate dashboard-title text-[15px]">{company.name}</div>
                       <div className="dashboard-company-meta mt-0.5 truncate">{company.industry} · {company.country}</div>
@@ -394,7 +400,7 @@ export default function CompaniesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.map((company) => {
+                  {paginated.map((company, index) => {
                     const inPortfolio = portfolioIds.has(company.id);
                     const isLoading = loading === company.id;
 
@@ -410,7 +416,13 @@ export default function CompaniesPage() {
                           tabIndex={0}
                         >
                           <div className="flex min-w-0 items-center gap-3">
-                            <CompanyLogo id={company.id} name={company.name} size={30} />
+                            <CompanyLogo
+                              name={company.name}
+                              logoStatus={company.logoStatus}
+                              logoSrc={company.logoSrc}
+                              size={30}
+                              priority={index < 6}
+                            />
                             <div className="min-w-0">
                               <div className="truncate dashboard-title text-[15px]">
                                 {company.name}

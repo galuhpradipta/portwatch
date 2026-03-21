@@ -27,12 +27,16 @@ export const companies = sqliteTable("companies", {
   industry: text("industry").notNull().default(""),
   website: text("website").notNull().default(""),
   logoUrl: text("logo_url").notNull().default(""),
+  logoStatus: text("logo_status").$type<"pending" | "ready" | "missing">().notNull().default("pending"),
+  logoCheckedAt: integer("logo_checked_at", { mode: "timestamp" }),
   country: text("country").notNull().default(""),
   employeeRange: text("employee_range").notNull().default(""),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-});
+}, (t) => [
+  index("companies_logo_status_idx").on(t.logoStatus),
+]);
 
 // ─── User Portfolio Companies ─────────────────────────────────────────────────
 

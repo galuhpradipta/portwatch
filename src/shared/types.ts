@@ -1,9 +1,13 @@
+export type LogoStatus = "pending" | "ready" | "missing";
+
 export type Company = {
   id: string;
   name: string;
   industry: string;
   website: string;
   logoUrl: string;
+  logoStatus: LogoStatus;
+  logoSrc: string;
   country: string;
   employeeRange: string;
   createdAt: Date | null;
@@ -15,6 +19,8 @@ export type PortfolioCompany = {
   industry: string;
   employeeRange: string;
   logoUrl: string;
+  logoStatus: LogoStatus;
+  logoSrc: string;
   website: string;
   country: string;
   latestHeadcount: number | null;

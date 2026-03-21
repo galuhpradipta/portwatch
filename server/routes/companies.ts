@@ -5,6 +5,7 @@ import { companies, companyHeadcountSnapshots, companyNews } from "../schema.ts"
 import { authMiddleware } from "../middleware/auth.ts";
 import type { Env } from "../lib/env.ts";
 import type { AuthVariables } from "../middleware/auth.ts";
+import { buildLogoSrc } from "../lib/logos.ts";
 
 export const companiesRoutes = new Hono<{ Bindings: Env; Variables: AuthVariables }>()
 
@@ -21,6 +22,7 @@ export const companiesRoutes = new Hono<{ Bindings: Env; Variables: AuthVariable
         industry: companies.industry,
         website: companies.website,
         logoUrl: companies.logoUrl,
+        logoStatus: companies.logoStatus,
         country: companies.country,
         employeeRange: companies.employeeRange,
         createdAt: companies.createdAt,
@@ -36,7 +38,10 @@ export const companiesRoutes = new Hono<{ Bindings: Env; Variables: AuthVariable
       .orderBy(asc(companies.name))
       .all();
 
-    return c.json(rows);
+    return c.json(rows.map((row) => ({
+      ...row,
+      logoSrc: buildLogoSrc(row.id, row.logoStatus),
+    })));
   })
 
   .get("/:id", authMiddleware, async (c) => {
@@ -61,5 +66,10 @@ export const companiesRoutes = new Hono<{ Bindings: Env; Variables: AuthVariable
       .limit(20)
       .all();
 
-    return c.json({ ...company, snapshots, news });
+    return c.json({
+      ...company,
+      logoSrc: buildLogoSrc(company.id, company.logoStatus),
+      snapshots,
+      news,
+    });
   });

@@ -13,6 +13,7 @@ import {
 import { authMiddleware } from "../middleware/auth.ts";
 import type { Env } from "../lib/env.ts";
 import type { AuthVariables } from "../middleware/auth.ts";
+import { buildLogoSrc } from "../lib/logos.ts";
 
 type PortfolioCompanyResult = {
   id: string;
@@ -20,6 +21,8 @@ type PortfolioCompanyResult = {
   industry: string;
   employeeRange: string;
   logoUrl: string;
+  logoStatus: "pending" | "ready" | "missing";
+  logoSrc: string;
   website: string;
   country: string;
   latestHeadcount: number | null;
@@ -89,6 +92,8 @@ async function getEnrichedPortfolio(
         industry: company.industry,
         employeeRange: company.employeeRange,
         logoUrl: company.logoUrl,
+        logoStatus: company.logoStatus,
+        logoSrc: buildLogoSrc(company.id, company.logoStatus),
         website: company.website,
         country: company.country,
         latestHeadcount,

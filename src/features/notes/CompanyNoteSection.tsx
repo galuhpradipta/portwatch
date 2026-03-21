@@ -53,7 +53,7 @@ export default function CompanyNoteSection({ companyId, initialNote }: Props) {
   }
 
   return (
-    <div className="companies-detail-shell radius-shell p-6 mb-6">
+    <div className="companies-detail-shell radius-shell p-5">
       <ConfirmDialog
         open={confirmDeleteOpen}
         onOpenChange={setConfirmDeleteOpen}

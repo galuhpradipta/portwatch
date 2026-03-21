@@ -5,11 +5,28 @@ import { companies, companyHeadcountSnapshots, companyNews } from "../schema.ts"
 import { SEED_COMPANIES } from "../seed/companies.ts";
 import { generateHeadcountSnapshots, generateNewsArticles, getDroppedCompanyIds } from "../seed/generate-mock-data.ts";
 import type { Env } from "../lib/env.ts";
+import { warmCompanyLogos } from "../lib/logos.ts";
+
+function parsePositiveInt(value: string | undefined) {
+  if (!value) return undefined;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
 
 export const adminRoutes = new Hono<{ Bindings: Env }>()
+  .post("/logos/warm", async (c) => {
+    const summary = await warmCompanyLogos(c.env, {
+      force: c.req.query("force") === "true",
+      limit: parsePositiveInt(c.req.query("limit")),
+    });
+
+    return c.json({ ok: true, ...summary });
+  })
+
   .post("/seed", async (c) => {
     const db = drizzle(c.env.DB);
     const batchSize = 5;
+    const shouldWarmLogos = c.req.query("warmLogos") !== "false";
 
     // Insert companies (idempotent)
     for (let i = 0; i < SEED_COMPANIES.length; i += batchSize) {
@@ -46,5 +63,14 @@ export const adminRoutes = new Hono<{ Bindings: Env }>()
       }
     }
 
-    return c.json({ ok: true, companies: SEED_COMPANIES.length, droppedCount: droppedIds.size });
+    const logos = shouldWarmLogos
+      ? await warmCompanyLogos(c.env)
+      : null;
+
+    return c.json({
+      ok: true,
+      companies: SEED_COMPANIES.length,
+      droppedCount: droppedIds.size,
+      logos,
+    });
   });

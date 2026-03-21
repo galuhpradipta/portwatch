@@ -1,6 +1,6 @@
 import { useLoaderData } from "react-router";
 import { useState } from "react";
-import { Plus, Minus, Globe, MapPin } from "@phosphor-icons/react";
+import { Plus, Minus, Globe, MapPin, Users } from "@phosphor-icons/react";
 import { useApi } from "../../shared/hooks/useApi.ts";
 import HeadcountChart from "./HeadcountChart.tsx";
 import SentimentBadge from "../../components/SentimentBadge.tsx";
@@ -80,7 +80,7 @@ export default function CompanyDetailPage() {
       : null;
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <Breadcrumbs
         crumbs={[
           { label: "Companies", to: "/companies" },
@@ -88,151 +88,171 @@ export default function CompanyDetailPage() {
         ]}
       />
 
-      <div className="companies-detail-shell radius-shell p-6 mb-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-4">
-            <CompanyLogo id={company.id} name={company.name} size={48} />
-            <div>
-              <p className="dashboard-kicker">Company brief</p>
-              <h1 className="dashboard-title mt-1 text-2xl">{company.name}</h1>
-              <p className="companies-meta text-sm mt-1">{company.industry}</p>
-              <div className="flex items-center gap-4 mt-3 text-sm companies-meta flex-wrap">
-                {company.country && (
-                  <span className="flex items-center gap-1">
-                    <MapPin size={14} />
-                    {company.country}
-                  </span>
-                )}
-                {company.website && (
-                  <a
-                    href={company.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="companies-link flex items-center gap-1"
-                  >
-                    <Globe size={14} />
-                    Website
-                  </a>
-                )}
-                {company.employeeRange && (
-                  <span>{company.employeeRange} employees</span>
-                )}
-              </div>
+      {/* Company Header */}
+      <div className="companies-detail-shell radius-shell p-4 sm:p-5 animate-fade-in-up animate-stagger-1">
+        <div className="flex items-center gap-3">
+          <CompanyLogo
+            name={company.name}
+            logoStatus={company.logoStatus}
+            logoSrc={company.logoSrc}
+            size={40}
+            priority
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <h1 className="dashboard-title text-xl leading-none">{company.name}</h1>
+              {company.industry && (
+                <span className="companies-info-pill">{company.industry}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+              {company.country && (
+                <span className="flex items-center gap-1 text-xs companies-meta">
+                  <MapPin size={11} weight="fill" />
+                  {company.country}
+                </span>
+              )}
+              {company.website && (
+                <a
+                  href={company.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="companies-link flex items-center gap-1 text-xs"
+                >
+                  <Globe size={11} />
+                  {company.website.replace(/^https?:\/\/(www\.)?/, "")}
+                </a>
+              )}
+              {company.employeeRange && (
+                <span className="flex items-center gap-1 text-xs companies-meta">
+                  <Users size={11} />
+                  {company.employeeRange}
+                </span>
+              )}
             </div>
           </div>
           <button
             onClick={togglePortfolio}
             disabled={loading}
-            className={`w-full sm:w-auto sm:min-w-[14rem] ${
-              inPortfolio ? "companies-action-secondary" : "companies-action-primary"
+            className={`flex-shrink-0 detail-portfolio-btn ${
+              inPortfolio ? "detail-portfolio-btn-remove" : "detail-portfolio-btn-add"
             }`}
           >
             {inPortfolio ? (
               <>
-                <Minus size={16} /> Remove from Portfolio
+                <Minus size={14} weight="bold" />
+                <span>Remove</span>
               </>
             ) : (
               <>
-                <Plus size={16} /> Add to Portfolio
+                <Plus size={14} weight="bold" />
+                <span>Track</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      <div className="companies-detail-shell radius-shell p-6 mb-4">
-        <div className="mb-4 flex items-center justify-between gap-3">
+      {/* Headcount Chart + Inline Stats */}
+      <div className="companies-detail-shell radius-shell overflow-hidden animate-fade-in-up animate-stagger-2">
+        <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
           <div>
             <p className="dashboard-kicker">Signal track</p>
-            <h2 className="dashboard-title mt-1 text-lg">Headcount History</h2>
+            <h2 className="dashboard-title mt-0.5 text-base">Headcount History</h2>
           </div>
-          <span className="companies-info-pill">
+          <span className="companies-info-pill flex-shrink-0">
             {company.snapshots.length} snapshot{company.snapshots.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <HeadcountChart snapshots={company.snapshots} />
-      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="companies-detail-shell radius-panel p-5">
-          <p className="dashboard-kicker mb-2">Latest headcount</p>
-          <p className="dashboard-data text-2xl font-bold tabular-nums">
-            {latestHeadcount !== null ? latestHeadcount.toLocaleString() : "—"}
-          </p>
-          <p className="companies-meta mt-2 text-xs">Most recent workforce reading.</p>
-        </div>
-        <div className="companies-detail-shell radius-panel p-5">
-          <p className="dashboard-kicker mb-2">Vs previous month</p>
-          {changePercent !== null ? (
-            <p
-              className={`dashboard-data text-2xl font-bold tabular-nums ${
-                changePercent < 0 ? "text-app-red" : "text-app-green"
+        <div className="detail-stat-strip mx-5 mb-4">
+          <div className="detail-stat-item">
+            <span className="detail-stat-label">Latest</span>
+            <span className="detail-stat-value">
+              {latestHeadcount !== null ? latestHeadcount.toLocaleString() : "—"}
+            </span>
+          </div>
+          <div className="detail-stat-divider" />
+          <div className="detail-stat-item">
+            <span className="detail-stat-label">MoM Change</span>
+            <span
+              className={`detail-stat-value ${
+                changePercent === null
+                  ? ""
+                  : changePercent < 0
+                    ? "text-app-red"
+                    : "text-app-green"
               }`}
             >
-              {changePercent >= 0 ? "+" : ""}
-              {changePercent.toFixed(1)}%
-            </p>
-          ) : (
-            <p className="text-2xl font-bold text-app-text-dim">—</p>
-          )}
-          <p className="companies-meta mt-2 text-xs">Short-term movement against the prior snapshot.</p>
+              {changePercent !== null
+                ? `${changePercent >= 0 ? "+" : ""}${changePercent.toFixed(1)}%`
+                : "—"}
+            </span>
+          </div>
+          <div className="detail-stat-divider" />
+          <div className="detail-stat-item">
+            <span className="detail-stat-label">Range</span>
+            <span className="detail-stat-value detail-stat-value-sm">
+              {company.snapshots.length > 0 ? `${firstDate} – ${lastDate}` : "No data"}
+            </span>
+          </div>
         </div>
-        <div className="companies-detail-shell radius-panel p-5">
-          <p className="dashboard-kicker mb-2">Data range</p>
-          <p className="dashboard-title text-sm font-semibold">
-            {company.snapshots.length > 0
-              ? `${firstDate} – ${lastDate}`
-              : "No data"}
-          </p>
-          <p className="companies-meta mt-2 text-xs tabular-nums">
-            {company.snapshots.length} snapshot{company.snapshots.length !== 1 ? "s" : ""}
-          </p>
+
+        <div className="px-2 pb-4">
+          <HeadcountChart snapshots={company.snapshots} />
         </div>
       </div>
 
       {inPortfolio && (
-        <CompanyNoteSection companyId={company.id} initialNote={note} />
+        <div className="animate-fade-in-up animate-stagger-3">
+          <CompanyNoteSection companyId={company.id} initialNote={note} />
+        </div>
       )}
 
-      <div className="companies-detail-shell radius-shell p-6">
-        <div className="mb-4 flex items-center justify-between gap-3">
+      {/* News & Sentiment */}
+      <div className="companies-detail-shell radius-shell p-5 animate-fade-in-up animate-stagger-4">
+        <div className="flex items-center justify-between gap-3 mb-3">
           <div>
             <p className="dashboard-kicker">Market pulse</p>
-            <h2 className="dashboard-title mt-1 text-lg">News & Sentiment</h2>
+            <h2 className="dashboard-title mt-0.5 text-base">News & Sentiment</h2>
           </div>
-          <span className="companies-info-pill">
+          <span className="companies-info-pill flex-shrink-0">
             {company.news.length} article{company.news.length !== 1 ? "s" : ""}
           </span>
         </div>
         {company.news.length === 0 ? (
           <p className="companies-muted text-sm">No news available.</p>
         ) : (
-          <div className="space-y-3">
+          <div>
             {company.news.map((article) => {
               const isExampleUrl = article.url?.includes("example.com");
               return (
                 <div
                   key={article.id}
-                  className="companies-news-row radius-panel flex items-start justify-between gap-4 px-4 py-4 last:border-0"
+                  className="companies-news-row flex items-center justify-between gap-4 px-3 py-3 rounded-lg last:border-0"
                 >
                   <div className="flex-1 min-w-0">
                     {isExampleUrl ? (
-                      <p className="companies-link text-sm line-clamp-2">{article.title}</p>
+                      <p className="companies-link text-sm line-clamp-1">{article.title}</p>
                     ) : (
                       <a
                         href={article.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="companies-link text-sm line-clamp-2"
+                        className="companies-link text-sm line-clamp-1"
                       >
                         {article.title}
                       </a>
                     )}
-                    <div className="flex items-center gap-2 mt-1.5 text-xs companies-muted">
-                      <span>{article.sourceName}</span>
-                      <span>·</span>
-                      <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
-                    </div>
+                    <p className="text-xs companies-muted mt-0.5">
+                      {article.sourceName}
+                      {" · "}
+                      {new Date(article.publishedAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </p>
                   </div>
                   <div className="flex-shrink-0">
                     <SentimentBadge score={article.sentimentScore} />
