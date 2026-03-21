@@ -103,6 +103,32 @@ export const companyNews = sqliteTable(
   ],
 );
 
+// ─── Company Notes ────────────────────────────────────────────────────────────
+
+export const companyNotes = sqliteTable(
+  "company_notes",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    companyId: text("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+  },
+  (t) => [
+    index("cno_user_company_idx").on(t.userId, t.companyId),
+    unique("cno_user_company_uniq").on(t.userId, t.companyId),
+  ],
+);
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect;
@@ -115,3 +141,5 @@ export type CompanyHeadcountSnapshot = typeof companyHeadcountSnapshots.$inferSe
 export type NewCompanyHeadcountSnapshot = typeof companyHeadcountSnapshots.$inferInsert;
 export type CompanyNewsItem = typeof companyNews.$inferSelect;
 export type NewCompanyNewsItem = typeof companyNews.$inferInsert;
+export type CompanyNote = typeof companyNotes.$inferSelect;
+export type NewCompanyNote = typeof companyNotes.$inferInsert;

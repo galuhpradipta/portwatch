@@ -45,3 +45,9 @@ export type NewsArticle = {
   sentimentScore: number;
   createdAt: Date | null;
 };
+
+export type CompanyNote = {
+  id: string;
+  content: string;
+  updatedAt: string | null;
+};

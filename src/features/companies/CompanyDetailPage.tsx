@@ -6,7 +6,8 @@ import HeadcountChart from "./HeadcountChart.tsx";
 import SentimentBadge from "../../components/SentimentBadge.tsx";
 import CompanyLogo from "../../components/CompanyLogo.tsx";
 import Breadcrumbs from "../../components/Breadcrumbs.tsx";
-import type { Company, HeadcountSnapshot, NewsArticle } from "../../shared/types.ts";
+import CompanyNoteSection from "../notes/CompanyNoteSection.tsx";
+import type { Company, HeadcountSnapshot, NewsArticle, CompanyNote } from "../../shared/types.ts";
 
 type CompanyDetail = Company & {
   snapshots: HeadcountSnapshot[];
@@ -16,10 +17,11 @@ type CompanyDetail = Company & {
 type LoaderData = {
   company: CompanyDetail;
   portfolio: { id: string }[];
+  note: CompanyNote | null;
 };
 
 export default function CompanyDetailPage() {
-  const { company, portfolio } = useLoaderData() as LoaderData;
+  const { company, portfolio, note } = useLoaderData() as LoaderData;
   const api = useApi();
 
   const serverInPortfolio = portfolio.some((p) => p.id === company.id);
@@ -187,6 +189,10 @@ export default function CompanyDetailPage() {
           </p>
         </div>
       </div>
+
+      {inPortfolio && (
+        <CompanyNoteSection companyId={company.id} initialNote={note} />
+      )}
 
       <div className="companies-detail-shell radius-shell p-6">
         <div className="mb-4 flex items-center justify-between gap-3">

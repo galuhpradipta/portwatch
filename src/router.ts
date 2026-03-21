@@ -53,11 +53,12 @@ export const router = createBrowserRouter([
       {
         path: "companies/:id",
         loader: async ({ params }) => {
-          const [company, portfolio] = await Promise.all([
+          const [company, portfolio, note] = await Promise.all([
             loadOr(() => apiFetch(`/companies/${params.id}`), null),
             loadOr(() => apiFetch("/portfolio"), []),
+            loadOr(() => apiFetch(`/notes/${params.id}`), null),
           ]);
-          return { company, portfolio };
+          return { company, portfolio, note };
         },
         lazy: async () => {
           const { default: Component } = await import("./features/companies/CompanyDetailPage.tsx");
