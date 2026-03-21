@@ -1,5 +1,5 @@
 import { useLoaderData, useNavigate } from "react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   MagnifyingGlass,
   Plus,
@@ -8,6 +8,8 @@ import {
   ArrowUp,
   ArrowDown,
   Buildings,
+  CaretLeft,
+  CaretRight,
 } from "@phosphor-icons/react";
 import { useApi } from "../../shared/hooks/useApi.ts";
 import { PORTFOLIO_LIMIT } from "../../shared/config.ts";
@@ -25,6 +27,8 @@ type LoaderData = {
 type SortKey = "name" | "headcount" | "status";
 type SortDir = "asc" | "desc";
 
+const PAGE_SIZE = 20;
+
 function formatNumber(value: number | null): string {
   if (value === null) return "—";
   return value.toLocaleString();
@@ -40,6 +44,7 @@ export default function CompaniesPage() {
   const [countryFilter, setCountryFilter] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [page, setPage] = useState(1);
   const serverPortfolioIds = useMemo(
     () => new Set(portfolio.map((p) => p.id)),
     [portfolio],
@@ -111,6 +116,12 @@ export default function CompaniesPage() {
       return sortDir === "asc" ? comparison : -comparison;
     });
   }, [companies, search, industryFilter, countryFilter, sortKey, sortDir, portfolioIds]);
+
+  useEffect(() => { setPage(1); }, [search, industryFilter, countryFilter, sortKey, sortDir]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + PAGE_SIZE);
 
   async function togglePortfolio(companyId: string) {
     setLoading(companyId);
@@ -189,6 +200,43 @@ export default function CompaniesPage() {
         description="Search by company or industry, then refine by sector and country."
         helper="Use column headers to sort the list."
         className="companies-compact-shell"
+        footer={
+          filtered.length > PAGE_SIZE ? (
+            <div className="flex items-center justify-between gap-4">
+              <span className="dashboard-data-muted text-xs tabular-nums">
+                Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filtered.length)} of {filtered.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => p - 1)}
+                  disabled={page === 1}
+                  aria-label="Previous page"
+                  className="companies-page-btn"
+                >
+                  <CaretLeft size={13} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    aria-current={p === page ? "page" : undefined}
+                    className={`companies-page-btn companies-page-num ${p === page ? "companies-page-active" : ""}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page === totalPages}
+                  aria-label="Next page"
+                  className="companies-page-btn"
+                >
+                  <CaretRight size={13} />
+                </button>
+              </div>
+            </div>
+          ) : null
+        }
         toolbar={
           <div className="companies-filter-grid">
             <label className="relative block">
@@ -267,7 +315,7 @@ export default function CompaniesPage() {
           <>
           {/* Mobile card list */}
         <div className="md:hidden divide-y divide-app-border-subtle">
-          {filtered.map((company) => {
+          {paginated.map((company) => {
             const inPortfolio = portfolioIds.has(company.id);
             const isLoading = loading === company.id;
             return (
@@ -346,7 +394,7 @@ export default function CompaniesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((company) => {
+                  {paginated.map((company) => {
                     const inPortfolio = portfolioIds.has(company.id);
                     const isLoading = loading === company.id;
 

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
-import { eq, like, desc, asc } from "drizzle-orm";
+import { eq, like, desc, asc, sql } from "drizzle-orm";
 import { companies, companyHeadcountSnapshots, companyNews } from "../schema.ts";
 import { authMiddleware } from "../middleware/auth.ts";
 import type { Env } from "../lib/env.ts";
@@ -12,33 +12,31 @@ export const companiesRoutes = new Hono<{ Bindings: Env; Variables: AuthVariable
     const db = drizzle(c.env.DB);
     const search = c.req.query("search") ?? "";
 
-    let rows;
-    if (search) {
-      rows = await db
-        .select()
-        .from(companies)
-        .where(like(companies.name, `%${search}%`))
-        .orderBy(asc(companies.name))
-        .all();
-    } else {
-      rows = await db.select().from(companies).orderBy(asc(companies.name)).all();
-    }
+    const rows = await db
+      .select({
+        id: companies.id,
+        name: companies.name,
+        coresignalCompanyId: companies.coresignalCompanyId,
+        coresignalShorthand: companies.coresignalShorthand,
+        industry: companies.industry,
+        website: companies.website,
+        logoUrl: companies.logoUrl,
+        country: companies.country,
+        employeeRange: companies.employeeRange,
+        createdAt: companies.createdAt,
+        latestHeadcount: sql<number | null>`(
+          SELECT headcount FROM company_headcount_snapshots
+          WHERE company_id = ${companies.id}
+          ORDER BY recorded_at DESC
+          LIMIT 1
+        )`,
+      })
+      .from(companies)
+      .where(search ? like(companies.name, `%${search}%`) : undefined)
+      .orderBy(asc(companies.name))
+      .all();
 
-    // Attach latest headcount per company
-    const result = await Promise.all(
-      rows.map(async (company) => {
-        const latest = await db
-          .select()
-          .from(companyHeadcountSnapshots)
-          .where(eq(companyHeadcountSnapshots.companyId, company.id))
-          .orderBy(desc(companyHeadcountSnapshots.recordedAt))
-          .limit(1)
-          .get();
-        return { ...company, latestHeadcount: latest?.headcount ?? null };
-      }),
-    );
-
-    return c.json(result);
+    return c.json(rows);
   })
 
   .get("/:id", authMiddleware, async (c) => {

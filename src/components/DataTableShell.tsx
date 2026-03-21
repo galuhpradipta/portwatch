@@ -6,6 +6,7 @@ type Props = {
   description: ReactNode;
   helper?: ReactNode;
   toolbar?: ReactNode;
+  footer?: ReactNode;
   children: ReactNode;
   className?: string;
   bodyClassName?: string;
@@ -16,6 +17,7 @@ export default function DataTableShell({
   description,
   helper,
   toolbar,
+  footer,
   children,
   className,
   bodyClassName,
@@ -35,6 +37,7 @@ export default function DataTableShell({
       <div className={joinClassNames("dashboard-table-shell dashboard-table-shell-embedded", bodyClassName)}>
         {children}
       </div>
+      {footer ? <div className="border-t border-app-border-subtle px-4 py-3 md:px-5">{footer}</div> : null}
     </div>
   );
 }
