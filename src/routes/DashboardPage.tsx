@@ -88,7 +88,7 @@ export default function DashboardPage() {
   async function handlePullData() {
     if (sim || portfolio.length === 0) return;
     const steps = buildSimSteps(portfolio);
-    const stepDuration = Math.min(300, Math.max(80, 2500 / steps.length));
+    const stepDuration = Math.min(600, Math.max(200, 6000 / steps.length));
 
     setSim({ steps, currentIndex: 0, exiting: false });
 
