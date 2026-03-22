@@ -6,7 +6,7 @@
 		{
 			"binding": "DB",
 			"database_name": "portwatch-db",
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "263554d3-97a6-40ec-962a-34f7bbb58bf6",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
