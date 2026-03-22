@@ -8,10 +8,28 @@ node_modules
 # Build
 dist
 
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets & keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+
+# Coverage
+coverage/
+
 # Local env
-.env
-.env.local
+.env*
+!.env.example
+!.dev.vars.example
 .dev.vars
+
+# Claude Code local config
+.claude/settings.local.json
 
 # Wrangler
 .wrangler
